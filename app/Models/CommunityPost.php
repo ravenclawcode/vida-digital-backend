@@ -1,0 +1,22 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+class CommunityPost extends Model
+{
+    use HasFactory, HasUuids;
+
+    protected $fillable = ['user_id', 'category', 'content'];
+
+    public function likes() {
+        return $this->hasMany(CommunityLike::class);
+    }
+
+    public function comments() {
+        return $this->hasMany(CommunityComment::class);
+    }
+}
