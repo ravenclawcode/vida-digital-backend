@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
-    // --- FITUR AUTENTIKASI DASAR ---
 
     public function checkToken(Request $request)
     {
@@ -89,52 +88,47 @@ class AuthController extends Controller
         return response()->json(['success' => true, 'message' => 'Berhasil logout']);
     }
 
-    // --- FITUR PROFILE (Wajib Login) ---
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
 
-public function updateProfile(Request $request)
-{
-    $user = $request->user();
+        $request->validate([
+            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:20480',
+        ]);
 
-    $request->validate([
-        'username' => 'required|string|max:255|unique:users,username,' . $user->id,
-        'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-        'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:20480', 
-    ]);
+        $data = [
+            'username' => $request->username,
+            'email' => $request->email,
+        ];
 
-    $data = [
-        'username' => $request->username,
-        'email' => $request->email,
-    ];
+        if ($request->hasFile('profile_photo')) {
+            if ($user->profile_photo) {
+                Storage::disk('public')->delete($user->profile_photo);
+            }
 
-    if ($request->hasFile('profile_photo')) {
-        // Hapus foto lama jika ada
-        if ($user->profile_photo) {
-            Storage::disk('public')->delete($user->profile_photo);
+            $path = $request->file('profile_photo')->store('profile_photos', 'public');
+            $data['profile_photo'] = $path;
         }
 
-        // Simpan foto baru ke folder 'profile_photos' di disk public
-        $path = $request->file('profile_photo')->store('profile_photos', 'public');
-        $data['profile_photo'] = $path; // Ini yang akan mengisi kolom NULL di database
+        $user->update($data);
+
+        $user->profile_photo_url = $user->profile_photo ? asset('storage/' . $user->profile_photo) : null;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profil berhasil diperbarui',
+            'user' => [
+                'id' => $user->id,
+                'username' => $user->username,
+                'email' => $user->email,
+                'role_id' => $user->role_id,
+                'profile_photo' => $user->profile_photo,
+                'profile_photo_url' => $user->profile_photo_url,
+            ]
+        ]);
     }
-
-    $user->update($data);
-
-    // Kirim URL lengkap agar Flutter mudah menampilkan gambar
-    $user->profile_photo_url = $user->profile_photo ? asset('storage/' . $user->profile_photo) : null;
-
-  return response()->json([
-        'success' => true,
-        'message' => 'Profil berhasil diperbarui',
-        'user' => [
-            'id' => $user->id,
-            'username' => $user->username,
-            'email' => $user->email,
-            'role_id' => $user->role_id,
-            'profile_photo' => $user->profile_photo,
-            'profile_photo_url' => $user->profile_photo_url, // Pastikan ini terkirim
-        ]
-    ]);
-}
 
     public function changePassword(Request $request)
     {
@@ -154,50 +148,46 @@ public function updateProfile(Request $request)
         return response()->json(['success' => true, 'message' => 'Password berhasil diubah.']);
     }
 
-    // --- FITUR LUPA PASSWORD / OTP (Bisa Public / Private) ---
-
     public function sendOtp(Request $request)
-{
-    $request->validate(['email' => 'required|email|exists:users,email']);
+    {
+        $request->validate(['email' => 'required|email|exists:users,email']);
 
-    $otp = rand(10000, 99999);
-    $user = User::where('email', $request->email)->first();
+        $otp = rand(10000, 99999);
+        $user = User::where('email', $request->email)->first();
 
-    // 1. Simpan ke database dulu
-    $user->update([
-        'otp_code' => $otp,
-        'otp_expires_at' => now()->addMinutes(10)
-    ]);
+        $user->update([
+            'otp_code' => $otp,
+            'otp_expires_at' => now()->addMinutes(10)
+        ]);
 
-    // 2. Baru kirim email
-    Mail::raw("Kode OTP Vida Anda adalah: $otp", function ($message) use ($user) {
-        $message->to($user->email)->subject('Kode Reset Password Vida');
-    });
+        Mail::raw("Kode OTP Vida Anda adalah: $otp", function ($message) use ($user) {
+            $message->to($user->email)->subject('Kode Reset Password Vida');
+        });
 
-    return response()->json(['success' => true, 'message' => 'OTP telah dikirim ke email Anda.']);
-}
-
-public function verifyOtp(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email|exists:users,email',
-        'otp' => 'required|string|size:5'
-    ]);
-
-    $user = User::where('email', $request->email)
-                ->where('otp_code', $request->otp)
-                ->first();
-
-    if (!$user) {
-        return response()->json(['success' => false, 'message' => 'OTP salah.'], 422);
+        return response()->json(['success' => true, 'message' => 'OTP telah dikirim ke email Anda.']);
     }
 
-    if (now()->gt($user->otp_expires_at)) {
-        return response()->json(['success' => false, 'message' => 'OTP sudah kadaluarsa.'], 422);
-    }
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'otp' => 'required|string|size:5'
+        ]);
 
-    return response()->json(['success' => true, 'message' => 'OTP valid, silakan ganti password.']);
-}
+        $user = User::where('email', $request->email)
+            ->where('otp_code', $request->otp)
+            ->first();
+
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'OTP salah.'], 422);
+        }
+
+        if (now()->gt($user->otp_expires_at)) {
+            return response()->json(['success' => false, 'message' => 'OTP sudah kadaluarsa.'], 422);
+        }
+
+        return response()->json(['success' => true, 'message' => 'OTP valid, silakan ganti password.']);
+    }
 
     public function resetPassword(Request $request)
     {
@@ -218,17 +208,16 @@ public function verifyOtp(Request $request)
     }
 
     public function getUser(Request $request)
-{
-    $user = $request->user();
-    
-    // Tambahkan URL foto profil secara dinamis
-    $user->profile_photo_url = $user->profile_photo 
-        ? asset('storage/' . $user->profile_photo) 
-        : null;
+    {
+        $user = $request->user();
 
-    return response()->json([
-        'success' => true,
-        'user' => $user
-    ]);
-}
+        $user->profile_photo_url = $user->profile_photo
+            ? asset('storage/' . $user->profile_photo)
+            : null;
+
+        return response()->json([
+            'success' => true,
+            'user' => $user
+        ]);
+    }
 }

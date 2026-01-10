@@ -11,9 +11,8 @@ class MoodLogSeeder extends Seeder
 {
     public function run(): void
     {
-        // Ambil semua user yang ada (karena ID-nya UUID)
         $users = User::all();
-        
+
         if ($users->isEmpty()) {
             $this->command->info('Tidak ada user ditemukan. Jalankan DatabaseSeeder dulu!');
             return;
@@ -22,9 +21,7 @@ class MoodLogSeeder extends Seeder
         $moods = ['senang', 'tenang', 'biasa', 'sedih', 'cemas', 'lelah'];
 
         foreach ($users as $user) {
-            // Kita buatkan data mood untuk 7 hari terakhir
             for ($i = 0; $i < 7; $i++) {
-                // Acak: tidak semua hari user mengisi mood (agar lebih realistik)
                 if (rand(0, 1)) {
                     MoodLog::updateOrCreate(
                         [

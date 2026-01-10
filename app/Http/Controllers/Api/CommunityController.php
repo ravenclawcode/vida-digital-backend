@@ -6,71 +6,131 @@ use App\Http\Controllers\Controller;
 use App\Models\CommunityPost;
 use App\Models\CommunityLike;
 use App\Models\CommunityComment;
+use App\Models\UserActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CommunityController extends Controller
 {
     public function index()
     {
-        $posts = CommunityPost::withCount(['likes', 'comments'])
-            ->latest()
-            ->get()
-            ->map(fn($post) => [
-                'id' => $post->id,
-                'display_name' => 'Anonim',
-                'category' => $post->category,
-                'content' => $post->content,
-                'likes_count' => $post->likes_count,
-                'comments_count' => $post->comments_count,
-                'time_ago' => $post->created_at->diffForHumans(),
-            ]);
+        try {
+            $userId = Auth::id();
 
-        return response()->json($posts);
+            $posts = CommunityPost::with(['user:id,username', 'comments.user:id,username'])
+                ->withCount(['likes', 'comments'])
+                ->withExists(['likes as is_liked' => fn($q) => $q->where('user_id', $userId)])
+                ->latest()
+                ->paginate(10);
+
+            $posts->getCollection()->transform(function ($post) use ($userId) {
+                $post->is_mine = $post->user_id === $userId;
+                $post->time_ago = $post->created_at->diffForHumans();
+
+                $post->author_name = $post->is_mine
+                    ? ($post->user->username ?? 'User')
+                    : 'Anonim';
+
+                $post->comments->each(function ($comment) use ($userId) {
+                    $comment->is_mine = $comment->user_id === $userId;
+                    $comment->time_ago = $comment->created_at->diffForHumans();
+                    $comment->author_name = $comment->is_mine
+                        ? ($comment->user->username ?? 'User')
+                        : 'Anonim';
+                });
+
+                return $post;
+            });
+
+            return response()->json($posts);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal memuat data: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'category' => 'required|string',
             'content' => 'required|string|min:5',
         ]);
 
-        $post = CommunityPost::create([
-            'user_id' => auth()->id(),
-            'category' => $request->get('category'),
-            'content' => $request->get('content'),
-        ]);
+        return DB::transaction(function () use ($validated) {
+            $post = CommunityPost::create([
+                'user_id' => Auth::id(),
+                'category' => $validated['category'],
+                'content' => $validated['content'],
+            ]);
 
-        \App\Models\UserActivity::log('community', 'Bergabung di "Komunitas Anonim"');
+            if (class_exists(UserActivity::class)) {
+                UserActivity::create([
+                    'user_id' => Auth::id(),
+                    'type' => 'community',
+                    'description' => 'Membuat postingan baru'
+                ]);
+            }
 
-        return response()->json(['status' => 'success', 'message' => 'Postingan terkirim', 'data' => $post]);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Postingan berhasil dibuat',
+                'data' => $post
+            ], 201);
+        });
     }
 
     public function toggleLike($postId)
     {
+        $post = CommunityPost::findOrFail($postId);
         $userId = Auth::id();
-        $like = CommunityLike::where('community_post_id', $postId)->where('user_id', $userId)->first();
+
+        $like = CommunityLike::where('community_post_id', $post->id)
+            ->where('user_id', $userId)
+            ->first();
 
         if ($like) {
             $like->delete();
-            return response()->json(['message' => 'Unlike berhasil']);
+            return response()->json(['status' => 'success', 'is_liked' => false]);
         }
 
-        CommunityLike::create(['community_post_id' => $postId, 'user_id' => $userId]);
-        return response()->json(['message' => 'Like berhasil']);
+        CommunityLike::create([
+            'community_post_id' => $post->id,
+            'user_id' => $userId
+        ]);
+
+        return response()->json(['status' => 'success', 'is_liked' => true]);
     }
 
     public function storeComment(Request $request, $postId)
     {
-        $request->validate(['comment' => 'required|string|min:2']);
+        $validated = $request->validate([
+            'comment' => 'required|string|min:2'
+        ]);
 
         $comment = CommunityComment::create([
             'community_post_id' => $postId,
             'user_id' => Auth::id(),
-            'comment' => $request->comment,
+            'comment' => $validated['comment'],
         ]);
 
-        return response()->json(['status' => 'success', 'message' => 'Komentar terkirim', 'data' => $comment]);
+        return response()->json([
+            'status' => 'success',
+            'data' => $comment
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $post = CommunityPost::findOrFail($id);
+
+        if ($post->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $post->delete();
+        return response()->json(['status' => 'success', 'message' => 'Postingan dihapus']);
     }
 }

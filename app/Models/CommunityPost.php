@@ -10,13 +10,23 @@ class CommunityPost extends Model
 {
     use HasFactory, HasUuids;
 
+    protected $keyType = 'string';
+    public $incrementing = false;
+
     protected $fillable = ['user_id', 'category', 'content'];
 
-    public function likes() {
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+    public function likes()
+    {
         return $this->hasMany(CommunityLike::class);
     }
 
-    public function comments() {
+    public function comments()
+    {
         return $this->hasMany(CommunityComment::class);
     }
 }

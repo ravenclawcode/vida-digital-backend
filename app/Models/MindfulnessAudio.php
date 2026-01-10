@@ -13,8 +13,9 @@ class MindfulnessAudio extends Model
 
     protected $fillable = ['title', 'category', 'description', 'duration', 'audio_url', 'cover_url'];
 
-    protected static function boot() {
+    protected static function boot()
+    {
         parent::boot();
-        static::creating(fn ($model) => $model->id = (string) Str::uuid());
+        static::creating(fn($model) => $model->id = (string) Str::uuid());
     }
 }

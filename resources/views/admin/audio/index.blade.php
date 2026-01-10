@@ -9,32 +9,24 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white p-6 shadow-sm sm:rounded-lg">
 
-                {{-- SUCCESS MESSAGE --}}
                 @if(session('success'))
                     <div class="mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">
                         {{ session('success') }}
                     </div>
                 @endif
 
-                {{-- FORM UPLOAD AUDIO --}}
-                <form action="{{ route('audio.store') }}"
-                      method="POST"
-                      enctype="multipart/form-data"
-                      class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <form action="{{ route('audio.store') }}" method="POST" enctype="multipart/form-data"
+                    class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                     @csrf
 
                     <div>
                         <x-input-label value="Judul Audio" />
-                        <x-text-input name="title"
-                                      class="w-full"
-                                      placeholder="Contoh: Relaksasi Pagi Hari"
-                                      required />
+                        <x-text-input name="title" class="w-full" placeholder="Contoh: Relaksasi Pagi Hari" required />
                     </div>
 
                     <div>
                         <x-input-label value="Kategori" />
-                        <select name="category"
-                                class="w-full border-gray-300 rounded-md shadow-sm
+                        <select name="category" class="w-full border-gray-300 rounded-md shadow-sm
                                        focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="Relaksasi">Relaksasi</option>
                             <option value="Meditasi">Meditasi</option>
@@ -44,20 +36,14 @@
 
                     <div class="md:col-span-2">
                         <x-input-label value="Deskripsi Singkat" />
-                        <textarea name="description"
-                                  rows="2"
-                                  class="w-full border-gray-300 rounded-md shadow-sm
+                        <textarea name="description" rows="2" class="w-full border-gray-300 rounded-md shadow-sm
                                          focus:border-indigo-500 focus:ring-indigo-500"
-                                  placeholder="Mulai hari dengan tenang..."></textarea>
+                            placeholder="Mulai hari dengan tenang..."></textarea>
                     </div>
 
-                    {{-- COVER --}}
                     <div class="md:col-span-2">
                         <x-input-label value="Foto Cover (Opsional)" />
-                        <input type="file"
-                               name="cover_file"
-                               accept="image/*"
-                               class="mt-1 block w-full text-sm text-gray-500
+                        <input type="file" name="cover_file" accept="image/*" class="mt-1 block w-full text-sm text-gray-500
                                       file:mr-4 file:py-2 file:px-4
                                       file:rounded-full file:border-0
                                       file:text-sm file:font-semibold
@@ -68,14 +54,9 @@
                         </p>
                     </div>
 
-                    {{-- AUDIO --}}
                     <div class="md:col-span-2">
                         <x-input-label value="File Audio (MP3)" />
-                        <input type="file"
-                               name="audio_file"
-                               accept="audio/mpeg"
-                               required
-                               class="mt-1 block w-full text-sm text-gray-500
+                        <input type="file" name="audio_file" accept="audio/mpeg" required class="mt-1 block w-full text-sm text-gray-500
                                       file:mr-4 file:py-2 file:px-4
                                       file:rounded-full file:border-0
                                       file:text-sm file:font-semibold
@@ -95,7 +76,6 @@
 
                 <hr class="my-6">
 
-                {{-- TABLE --}}
                 <div class="overflow-x-auto">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">
                         Daftar Audio
@@ -116,22 +96,19 @@
                             @forelse($audios as $audio)
                                 <tr class="hover:bg-gray-50 transition-colors">
 
-                                    {{-- COVER COLUMN --}}
                                     <td class="p-4 border-b text-center">
                                         @if($audio->cover_url)
                                             <img src="{{ $audio->cover_url }}"
-                                                 class="w-10 h-10 object-cover rounded-md mx-auto shadow"
-                                                 alt="Cover">
+                                                class="w-10 h-10 object-cover rounded-md mx-auto shadow" alt="Cover">
                                         @else
                                             <div class="w-10 h-10 bg-gray-100 rounded-md
-                                                        flex items-center justify-center
-                                                        text-gray-400 text-xs mx-auto">
+                                                                flex items-center justify-center
+                                                                text-gray-400 text-xs mx-auto">
                                                 N/A
                                             </div>
                                         @endif
                                     </td>
 
-                                    {{-- TITLE --}}
                                     <td class="p-4 border-b font-medium text-gray-900">
                                         {{ $audio->title }}
                                         <div class="text-xs text-gray-400 truncate max-w-xs">
@@ -139,28 +116,23 @@
                                         </div>
                                     </td>
 
-                                    {{-- CATEGORY --}}
                                     <td class="p-4 border-b text-center">
                                         <span class="px-2 py-1 text-xs font-semibold
-                                                     bg-blue-100 text-blue-700 rounded-full">
+                                                         bg-blue-100 text-blue-700 rounded-full">
                                             {{ $audio->category }}
                                         </span>
                                     </td>
 
-                                    {{-- DURATION --}}
                                     <td class="p-4 border-b text-center text-sm text-gray-600">
                                         {{ $audio->duration }}
                                     </td>
 
-                                    {{-- ACTION --}}
                                     <td class="p-4 border-b text-center">
-                                        <form action="{{ route('audio.destroy', $audio->id) }}"
-                                              method="POST"
-                                              onsubmit="return confirm('Hapus audio ini?')">
+                                        <form action="{{ route('audio.destroy', $audio->id) }}" method="POST"
+                                            onsubmit="return confirm('Hapus audio ini?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit"
-                                                    class="text-red-500 hover:text-red-700 transition">
+                                            <button type="submit" class="text-red-500 hover:text-red-700 transition">
                                                 🗑
                                             </button>
                                         </form>
@@ -169,8 +141,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5"
-                                        class="p-8 text-center text-gray-400 italic">
+                                    <td colspan="5" class="p-8 text-center text-gray-400 italic">
                                         Belum ada konten audio
                                     </td>
                                 </tr>

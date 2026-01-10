@@ -9,6 +9,8 @@ class EducationContent extends Model
 {
     use HasUuids;
 
+    public $incrementing = false;
+    protected $keyType = 'string';
     protected $fillable = [
         'title',
         'type',
@@ -16,9 +18,13 @@ class EducationContent extends Model
         'duration',
         'description',
         'video_url',
-        'content',
         'important_note',
         'thumbnail',
         'likes'
     ];
+
+    public function likedByUsers()
+    {
+        return $this->belongsToMany(User::class, 'education_likes', 'education_content_id', 'user_id');
+    }
 }

@@ -14,13 +14,12 @@ return new class extends Migration {
             $table->uuid('id')->primary();
             $table->string('title');
             $table->enum('type', ['video', 'artikel']);
-            $table->string('category');
+            $table->string('category'); 
             $table->string('duration');
-            $table->text('description')->nullable(); // Untuk deskripsi video
-            $table->string('video_url')->nullable(); // ID YouTube
-            $table->longText('content')->nullable(); // Isi teks artikel
-            $table->text('important_note')->nullable(); // Box pink catatan penting
-            $table->string('thumbnail')->nullable(); // Auto dari YT
+            $table->longText('description');
+            $table->string('video_url')->nullable();
+            $table->text('important_note')->nullable();
+            $table->string('thumbnail')->nullable();
             $table->integer('likes')->default(0);
             $table->timestamps();
         });

@@ -26,20 +26,32 @@
                             @forelse($moodStats as $stat)
                                 @php
                                     $percentage = $totalMoods > 0 ? round(($stat->total / $totalMoods) * 100) : 0;
-                                    // Warna progress bar berdasarkan mood
+
+                                    // 1. Mapping Angka ke Label Teks
+                                    $moodLabel = match($stat->mood_code) {
+                                        '1' => 'Senang',
+                                        '2' => 'Tenang',
+                                        '3' => 'Sedih',
+                                        '4' => 'Cemas',
+                                        '5' => 'Lelah',
+                                        '6' => 'Sangat Lelah', // Contoh jika 6 adalah Sangat Lelah
+                                        default => 'Lainnya (' . $stat->mood_code . ')'
+                                    };
+
+                                    // 2. Warna progress bar berdasarkan mood (menggunakan angka id)
                                     $barColor = match($stat->mood_code) {
-                                        'senang' => 'bg-green-400',
-                                        'tenang' => 'bg-blue-400',
-                                        'sedih'  => 'bg-yellow-500',
-                                        'cemas'  => 'bg-orange-500',
-                                        'lelah'  => 'bg-purple-500',
-                                        default  => 'bg-gray-400'
+                                        '1' => 'bg-green-400',
+                                        '2' => 'bg-blue-400',
+                                        '3' => 'bg-yellow-500',
+                                        '4' => 'bg-orange-500',
+                                        '5', '6' => 'bg-purple-500',
+                                        default => 'bg-gray-400'
                                     };
                                 @endphp
                                 <div>
                                     <div class="flex justify-between mb-1">
-                                        <span class="text-sm font-semibold capitalize text-gray-700">
-                                            {{ $stat->mood_code }}
+                                        <span class="text-sm font-semibold text-gray-700">
+                                            {{ $moodLabel }}
                                         </span>
                                         <span class="text-sm font-bold text-gray-600">{{ $percentage }}%</span>
                                     </div>

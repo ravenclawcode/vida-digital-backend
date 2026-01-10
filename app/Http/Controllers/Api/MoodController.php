@@ -12,8 +12,8 @@ class MoodController extends Controller
     public function getWeeklySummary(Request $request)
     {
         $user = $request->user();
-        $startOfWeek = Carbon::now()->startOfWeek(); // Mulai dari Senin
-        $endOfWeek = Carbon::now()->endOfWeek();     // Berakhir di Minggu
+        $startOfWeek = Carbon::now()->startOfWeek();
+        $endOfWeek = Carbon::now()->endOfWeek();
 
         $logs = MoodLog::where('user_id', $user->id)
             ->whereBetween('date', [$startOfWeek, $endOfWeek])
@@ -30,7 +30,7 @@ class MoodController extends Controller
             $summary[] = [
                 'day_name' => $days[$i],
                 'date' => $currentDate,
-                'mood_code' => $log ? $log->mood_code : null, // Jika null, Flutter tampilkan "?"
+                'mood_code' => $log ? $log->mood_code : null,
                 'id' => $log ? $log->id : null,
             ];
         }
@@ -38,7 +38,6 @@ class MoodController extends Controller
         return response()->json(['success' => true, 'data' => $summary]);
     }
 
-    // Simpan atau Update Mood (Hanya untuk Hari Ini)
     public function store(Request $request)
     {
         $request->validate(['mood_code' => 'required|string']);
@@ -46,7 +45,6 @@ class MoodController extends Controller
         $user = $request->user();
         $today = Carbon::now()->format('Y-m-d');
 
-        // Menggunakan updateOrCreate agar mood hari ini bisa diganti-ganti
         $mood = MoodLog::updateOrCreate(
             ['user_id' => $user->id, 'date' => $today],
             ['mood_code' => $request->mood_code]
@@ -59,7 +57,6 @@ class MoodController extends Controller
         ]);
     }
 
-    // Hapus Mood (Klik tanda X di UI)
     public function destroy($id)
     {
         $log = MoodLog::findOrFail($id);

@@ -13,11 +13,11 @@ return new class extends Migration
         Schema::create('mindfulness_audios', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('title');
-            $table->string('category'); // Relaksasi, Meditasi, atau Tidur
+            $table->string('category'); 
             $table->text('description');
-            $table->string('duration'); // Contoh: 5:00
-            $table->string('audio_url'); // Link file audio
-            $table->string('cover_url')->nullable(); // Gambar cover
+            $table->string('duration');
+            $table->string('audio_url'); 
+            $table->string('cover_url')->nullable(); 
             $table->timestamps();
         });
     }

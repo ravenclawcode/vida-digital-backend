@@ -13,8 +13,8 @@ return new class extends Migration {
         Schema::create('user_activities', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
-            $table->string('type'); // 'audio', 'community', 'education', 'chatbot'
-            $table->string('description'); // Contoh: 'Mendengarkan "Meditasi Penyembuhan"'
+            $table->string('type');
+            $table->string('description');
             $table->timestamps();
         });
     }

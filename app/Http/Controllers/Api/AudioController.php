@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\MindfulnessAudio;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str; // Tambahkan ini
+use Illuminate\Support\Str;
 
 class AudioController extends Controller
 {
@@ -17,12 +17,10 @@ class AudioController extends Controller
             return $q->where('category', $category);
         })->latest()->get()->map(function ($item) {
 
-            // Logika untuk Audio URL
             $finalAudioUrl = Str::startsWith($item->audio_url, ['http://', 'https://'])
                 ? $item->audio_url
                 : asset($item->audio_url);
 
-            // Logika untuk Cover URL
             if ($item->cover_url) {
                 $finalCoverUrl = Str::startsWith($item->cover_url, ['http://', 'https://'])
                     ? $item->cover_url
@@ -42,7 +40,6 @@ class AudioController extends Controller
             ];
         });
 
-        // TRIGGER LOG (Tambahkan kembali jika belum ada)
         \App\Models\UserActivity::log('audio', 'Membuka fitur Audio Mindfulness');
 
         return response()->json([

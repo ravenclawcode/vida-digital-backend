@@ -12,7 +12,6 @@ return new class extends Migration {
     {
         Schema::create('mood_logs', function (Blueprint $table) {
             $table->id();
-            // Gunakan foreignUuid, bukan foreignId, karena tabel users pakai UUID
             $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
             $table->string('mood_code');
             $table->date('date');

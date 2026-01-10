@@ -11,12 +11,12 @@ class EducationController extends Controller
 {
     public function index(Request $request)
     {
-        Carbon::setLocale('id');
         $type = $request->query('type');
+        $user = $request->user('sanctum');
 
         $data = EducationContent::when($type, function ($q) use ($type) {
             return $q->where('type', $type);
-        })->latest()->get()->map(function ($item) {
+        })->latest()->get()->map(function ($item) use ($user) {
             return [
                 'id' => $item->id,
                 'title' => $item->title,
@@ -26,25 +26,48 @@ class EducationController extends Controller
                 'description' => $item->description,
                 'video_url' => $item->video_url,
                 'thumbnail' => $item->thumbnail,
-                'likes' => $item->likes, 
-                'published_at' => $item->created_at->diffForHumans(), 
+                'important_note' => $item->important_note,
+                'likes' => (int) $item->likes,
+                'published_at' => $item->created_at->locale('id')->diffForHumans(),
+                'is_liked' => $user ? \DB::table('education_likes')
+                    ->where('user_id', $user->id)
+                    ->where('education_content_id', $item->id)
+                    ->exists() : false,
             ];
         });
-
-        \App\Models\UserActivity::log('education', 'Membaca "Tips & Edukasi"');
 
         return response()->json(['success' => true, 'data' => $data]);
     }
 
-   public function like($id)
-{
-    $content = EducationContent::findOrFail($id);
-    
-    $content->increment('likes'); 
-    
-    return response()->json([
-        'success' => true, 
-        'current_likes' => $content->likes
-    ]);
-}
+    public function like(Request $request, $id)
+    {
+        $user = $request->user();
+        $content = EducationContent::findOrFail($id);
+
+        $existingLike = \DB::table('education_likes')
+            ->where('user_id', $user->id)
+            ->where('education_content_id', $id)
+            ->first();
+
+        if ($existingLike) {
+            \DB::table('education_likes')->where('id', $existingLike->id)->delete();
+            $content->decrement('likes');
+            $liked = false;
+        } else {
+            \DB::table('education_likes')->insert([
+                'user_id' => $user->id,
+                'education_content_id' => $id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $content->increment('likes');
+            $liked = true;
+        }
+
+        return response()->json([
+            'success' => true,
+            'is_liked' => $liked,
+            'current_likes' => (int) $content->fresh()->likes
+        ]);
+    }
 }

@@ -5,71 +5,104 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ChatMessage;
-use Gemini\Laravel\Facades\Gemini;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\Response;
 
 class ChatbotController extends Controller
 {
     public function sendMessage(Request $request)
     {
         $user = auth()->user();
-        $now = Carbon::now();
-        $limit = 20;
+        $request->validate(['message' => 'required|string|max:1000']);
 
-        // 1. Reset kuota jika sudah lewat 24 jam
-        if ($user->last_chat_at && $now->diffInHours($user->last_chat_at) >= 24) {
-            $user->daily_chat_count = 0;
-            $user->save();
+        if ($user->last_chat_at && Carbon::now()->diffInHours($user->last_chat_at) >= 24) {
+            $user->update(['daily_chat_count' => 0]);
         }
 
-        // 2. Cek kuota
-        if ($user->daily_chat_count >= $limit) {
+        if ($user->daily_chat_count >= 20) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Kuota harian habis. Coba lagi besok.',
+                'message' => 'Kuota harian habis.'
             ], 429);
         }
 
-        $request->validate(['message' => 'required|string']);
+        return DB::transaction(function () use ($user, $request) {
 
-        // 3. Simpan pesan user
-        ChatMessage::create([
-            'user_id' => $user->id,
-            'message' => $request->message,
-            'sender' => 'user'
-        ]);
-
-        try {
-            // 4. Panggil Gemini AI
-            $prompt = "Kamu adalah 'Teman Hati', asisten suportif di aplikasi Vida. 
-                       Bantu user tentang kesehatan mental dan HIV/AIDS dengan empati. 
-                       Pesan user: " . $request->message;
-
-            $result = Gemini::geminiPro()->generateContent($prompt);
-            $botResponse = $result->text();
-
-            // 5. Update data user
-            $user->increment('daily_chat_count');
-            $user->update(['last_chat_at' => $now]);
-
-            // 6. Simpan balasan bot
-            $chat = ChatMessage::create([
+            ChatMessage::create([
                 'user_id' => $user->id,
-                'message' => $botResponse,
-                'sender' => 'bot'
+                'message' => $request->message,
+                'sender' => 'user'
             ]);
 
-            \App\Models\UserActivity::log('chatbot', 'Bercerita dengan "Teman Hati"');
+            try {
+                $apiKey = env('GEMINI_API_KEY');
 
-            return response()->json([
-                'sender' => 'bot',
-                'message' => $botResponse,
-                'time' => $chat->created_at->format('H.i')
-            ]);
+                if (!$apiKey) {
+                    throw new \Exception("API Key tidak ditemukan di file .env");
+                }
 
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Gagal terhubung ke AI.'], 500);
-        }
+                $prompt = "Nama kamu Teman Hati. Jawab dengan empati dan ramah. Pesan user: "
+                    . $request->message;
+
+                $url = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent"
+                    . "?key=" . trim($apiKey);
+
+                /** @var Response $response */
+                $response = Http::withHeaders([
+                    'Content-Type' => 'application/json',
+                ])
+                    ->timeout(30)
+                    ->post($url, [
+                        'contents' => [
+                            [
+                                'role' => 'user',
+                                'parts' => [
+                                    ['text' => $prompt]
+                                ]
+                            ]
+                        ]
+                    ]);
+
+                if (!$response->successful()) {
+                    Log::error('Google API Detail Error', [
+                        'status' => $response->status(),
+                        'body' => $response->body(),
+                    ]);
+
+                    throw new \Exception(
+                        "Gagal menghubungi AI. Status: " . $response->status()
+                    );
+                }
+
+                $data = $response->json();
+
+                $botResponse =
+                    $data['candidates'][0]['content']['parts'][0]['text']
+                    ?? "Maaf, saat ini aku belum bisa memproses pesan itu.";
+
+                $user->increment('daily_chat_count');
+                $user->update(['last_chat_at' => now()]);
+
+                $botChat = ChatMessage::create([
+                    'user_id' => $user->id,
+                    'message' => $botResponse,
+                    'sender' => 'bot'
+                ]);
+
+                return response()->json([
+                    'sender' => 'bot',
+                    'message' => $botResponse,
+                    'time' => $botChat->created_at->format('H.i')
+                ]);
+
+            } catch (\Exception $e) {
+                Log::error('Chatbot Error: ' . $e->getMessage());
+                throw $e;
+            }
+        });
     }
 
     public function getHistory()
@@ -80,7 +113,9 @@ class ChatbotController extends Controller
             ->map(fn($chat) => [
                 'message' => $chat->message,
                 'sender' => $chat->sender,
-                'time' => $chat->created_at->format('H.i')
+                'time' => $chat->created_at
+                    ? $chat->created_at->format('H.i')
+                    : now()->format('H.i')
             ]);
 
         return response()->json($history);

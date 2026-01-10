@@ -18,12 +18,12 @@ class EducationController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required',
-            'type' => 'required',
-            'category' => 'required',
-            'duration' => 'required_if:type,artikel',
+            'title' => 'required|string|max:255',
+            'type' => 'required|in:video,artikel',
+            'category' => 'required|in:dasar,kesehatan mental,gaya hidup',
+            'description' => 'required',
             'video_url' => 'required_if:type,video',
-            'content' => 'required_if:type,artikel',
+            'duration' => 'required_if:type,artikel',
         ]);
 
         $data = $request->only([
@@ -32,28 +32,23 @@ class EducationController extends Controller
             'category',
             'duration',
             'description',
-            'video_url',
-            'content',
-            'important_note',
+            'important_note'
         ]);
 
         if ($request->type === 'video') {
             if (preg_match('/(?:youtube\.com\/.*v=|youtu\.be\/)([^"&?\/\s]{11})/', $request->video_url, $match)) {
-
                 $youtubeId = $match[1];
-
                 $data['video_url'] = $youtubeId;
                 $data['thumbnail'] = "https://img.youtube.com/vi/$youtubeId/hqdefault.jpg";
-
                 $data['duration'] = $this->getYoutubeDuration($youtubeId) ?? '00:00';
             }
         } else {
             $data['video_url'] = null;
             $data['thumbnail'] = null;
+            // Penting: duration artikel diambil dari input manual admin
         }
 
         EducationContent::create($data);
-
         return redirect()->back()->with('success', 'Konten edukasi berhasil disimpan!');
     }
 
@@ -84,14 +79,12 @@ class EducationController extends Controller
             return null;
         }
 
-        // Convert ISO 8601 to seconds
         $interval = new \DateInterval($duration);
         $seconds =
             ($interval->h * 3600) +
             ($interval->i * 60) +
             $interval->s;
 
-        // Format mm:ss
         return gmdate($seconds >= 3600 ? "H:i:s" : "i:s", $seconds);
     }
 

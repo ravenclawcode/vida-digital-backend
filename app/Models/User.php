@@ -34,15 +34,15 @@ class User extends Authenticatable
      * Atribut yang dapat diisi secara massal (Mass Assignable)
      */
     protected $fillable = [
-    'role_id',
-    'token_id',
-    'username',
-    'email',
-    'password',
-    'otp_code',
-    'otp_expires_at',
-    'profile_photo', 
-];
+        'role_id',
+        'token_id',
+        'username',
+        'email',
+        'password',
+        'otp_code',
+        'otp_expires_at',
+        'profile_photo',
+    ];
 
     /**
      * Atribut yang disembunyikan saat serialisasi (JSON)
@@ -61,5 +61,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function likedByUsers()
+    {
+        return $this->belongsToMany(
+            \App\Models\User::class,
+            'education_likes',
+            'education_content_id',
+            'user_id'
+        );
     }
 }

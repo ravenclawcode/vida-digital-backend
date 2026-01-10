@@ -17,7 +17,6 @@ class HomeController extends Controller
         $user = auth()->user();
         $today = Carbon::now()->format('Y-m-d');
 
-        // 1. Ambil Jadwal Obat Hari Ini
         $medications = Medication::where('user_id', $user->id)
             ->get()
             ->map(function ($med) use ($today) {
@@ -29,11 +28,10 @@ class HomeController extends Controller
                     'id' => $med->id,
                     'name' => $med->name,
                     'time' => Carbon::parse($med->reminder_time)->format('H:i'),
-                    'status' => $log ? $log->status : 'pending', // pending, taken, skipped
+                    'status' => $log ? $log->status : 'pending',
                 ];
             });
 
-        // 2. Ambil Data Mood Mingguan (Senin - Minggu)
         $startOfWeek = Carbon::now()->startOfWeek();
         $moodLogs = MoodLog::where('user_id', $user->id)
             ->whereBetween('date', [$startOfWeek, Carbon::now()->endOfWeek()])
@@ -54,7 +52,6 @@ class HomeController extends Controller
             ];
         }
 
-        // 3. Ambil 3 Aktivitas Terakhir
         $activities = UserActivity::where('user_id', $user->id)
             ->latest()
             ->take(3)
@@ -65,7 +62,6 @@ class HomeController extends Controller
                 'time_ago' => $act->created_at->diffForHumans(),
             ]);
 
-        // 4. Response Gabungan untuk Beranda
         return response()->json([
             'success' => true,
             'data' => [

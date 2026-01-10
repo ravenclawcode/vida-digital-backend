@@ -27,7 +27,7 @@ class CounselorController extends Controller
             'username' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role_id' => 2, 
+            'role_id' => 2,
         ]);
 
         return redirect()->back()->with('success', 'Konselor berhasil ditambahkan.');

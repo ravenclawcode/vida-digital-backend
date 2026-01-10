@@ -9,12 +9,13 @@ use App\Models\UserActivity;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
-class MedicationController extends Controller {
-    
-    // Tampil di Beranda (Filter hari ini)
-    public function getDailySchedule(Request $request) {
+class MedicationController extends Controller
+{
+
+    public function getDailySchedule(Request $request)
+    {
         $today = Carbon::now()->format('Y-m-d');
-        
+
         $medications = Medication::where('user_id', auth()->id())
             ->get()
             ->map(function ($med) use ($today) {
@@ -33,11 +34,11 @@ class MedicationController extends Controller {
         return response()->json(['success' => true, 'data' => $medications]);
     }
 
-    // Tambah Obat Baru
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         $request->validate([
             'name' => 'required|string',
-            'time' => 'required' 
+            'time' => 'required'
         ]);
 
         $medication = Medication::create([
@@ -51,8 +52,8 @@ class MedicationController extends Controller {
         return response()->json(['success' => true, 'data' => $medication]);
     }
 
-    // Update Status: "Tanda" (taken) atau "Batal" (skipped)
-    public function updateStatus(Request $request, $id) {
+    public function updateStatus(Request $request, $id)
+    {
         $request->validate(['status' => 'required|in:taken,skipped']);
         $today = Carbon::now()->format('Y-m-d');
 
@@ -64,8 +65,8 @@ class MedicationController extends Controller {
         return response()->json(['success' => true, 'message' => 'Status diperbarui']);
     }
 
-    // Hapus Obat
-    public function destroy($id) {
+    public function destroy($id)
+    {
         Medication::where('id', $id)->where('user_id', auth()->id())->delete();
         return response()->json(['success' => true, 'message' => 'Obat berhasil dihapus']);
     }

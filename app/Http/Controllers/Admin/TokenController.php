@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\RegistrationToken; 
+use App\Models\RegistrationToken;
 use Illuminate\Support\Str;
 
 class TokenController extends Controller
@@ -31,7 +31,7 @@ class TokenController extends Controller
     public function destroy($id)
     {
         $token = RegistrationToken::findOrFail($id);
-        
+
         if ($token->is_used) {
             return redirect()->back()->with('error', 'Token yang sudah terpakai tidak bisa dihapus.');
         }
