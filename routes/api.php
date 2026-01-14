@@ -25,15 +25,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/medications/today', [MedicationController::class, 'getDailySchedule']);
     Route::post('/medications', [MedicationController::class, 'store']);
     Route::post('/medications/{id}/status', [MedicationController::class, 'updateStatus']);
+    Route::put('/medications/{id}', [MedicationController::class, 'update']);
     Route::delete('/medications/{id}', [MedicationController::class, 'destroy']);
     Route::get('/moods/weekly', [MoodController::class, 'getWeeklySummary']);
     Route::post('/moods', [MoodController::class, 'store']);
     Route::delete('/moods/{id}', [MoodController::class, 'destroy']);
     Route::get('/audio', [AudioController::class, 'index']);
     Route::get('/home', [HomeController::class, 'getDashboard']);
-   Route::get('/community', [CommunityController::class, 'index']);
+    Route::get('/community', [CommunityController::class, 'index']);
     Route::post('/community', [CommunityController::class, 'store']);
-    Route::delete('/community/{id}', [CommunityController::class, 'destroy']); 
+    Route::delete('/community/{id}', [CommunityController::class, 'destroy']);
     Route::post('/community/{id}/like', [CommunityController::class, 'toggleLike']);
     Route::post('/community/{id}/comment', [CommunityController::class, 'storeComment']);
     Route::get('/chat/history', [ChatbotController::class, 'getHistory']);

@@ -56,15 +56,15 @@ class ChatbotController extends Controller
                 ])
                     ->timeout(30)
                     ->post($url, [
-                        'contents' => [
-                            [
-                                'role' => 'user',
-                                'parts' => [
-                                    ['text' => $prompt]
+                            'contents' => [
+                                [
+                                    'role' => 'user',
+                                    'parts' => [
+                                        ['text' => $prompt]
+                                    ]
                                 ]
                             ]
-                        ]
-                    ]);
+                        ]);
 
                 if (!$response->successful()) {
                     Log::error('Google API Detail Error', [

@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->uuid('id')->primary();
             $table->string('title');
             $table->enum('type', ['video', 'artikel']);
-            $table->string('category'); 
+            $table->string('category');
             $table->string('duration');
             $table->longText('description');
             $table->string('video_url')->nullable();

@@ -5,28 +5,35 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Medication;
 use App\Models\MedicationLog;
-use App\Models\UserActivity;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 
 class MedicationController extends Controller
 {
 
     public function getDailySchedule(Request $request)
     {
-        $today = Carbon::now()->format('Y-m-d');
+        $user = $request->user();
+        $today = now()->toDateString();
 
-        $medications = Medication::where('user_id', auth()->id())
+        $medications = Medication::where('user_id', $user->id)
+            ->where(function ($query) use ($today) {
+                $query->whereDate('created_at', $today)
+                    ->orWhere('is_everyday', true);
+            })
+            ->with([
+                    'logs' => function ($q) use ($today) {
+                        $q->whereDate('date', $today);
+                    }
+                ])
             ->get()
-            ->map(function ($med) use ($today) {
-                $log = MedicationLog::where('medication_id', $med->id)
-                    ->where('date', $today)
-                    ->first();
-
+            ->map(function ($med) {
+                $log = $med->logs->first();
                 return [
                     'id' => $med->id,
                     'name' => $med->name,
-                    'time' => Carbon::parse($med->reminder_time)->format('H:i'),
+                    'time' => \Carbon\Carbon::parse($med->reminder_time)->format('H:i'),
+                    'is_everyday' => $med->is_everyday,
                     'status' => $log ? $log->status : 'pending',
                 ];
             });
@@ -38,31 +45,50 @@ class MedicationController extends Controller
     {
         $request->validate([
             'name' => 'required|string',
-            'time' => 'required'
+            'time' => 'required',
+            'is_everyday' => 'required|boolean'
         ]);
 
         $medication = Medication::create([
-            'user_id' => auth()->id(),
+            'user_id' => $request->user()->id,
             'name' => $request->name,
-            'reminder_time' => $request->time
+            'reminder_time' => $request->time,
+            'is_everyday' => $request->is_everyday,
         ]);
-
-        UserActivity::log('medication', 'Menambahkan obat "' . $request->name . '"');
 
         return response()->json(['success' => true, 'data' => $medication]);
     }
 
     public function updateStatus(Request $request, $id)
     {
-        $request->validate(['status' => 'required|in:taken,skipped']);
-        $today = Carbon::now()->format('Y-m-d');
+        $user = $request->user();
+        $status = $request->status;
+        $today = now()->toDateString();
 
         $log = MedicationLog::updateOrCreate(
             ['medication_id' => $id, 'date' => $today],
-            ['status' => $request->status]
+            ['status' => $status]
         );
 
-        return response()->json(['success' => true, 'message' => 'Status diperbarui']);
+        return response()->json(['success' => true, 'log' => $log]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string',
+            'time' => 'required',
+            'is_everyday' => 'required|boolean'
+        ]);
+
+        $medication = Medication::findOrFail($id);
+        $medication->update([
+            'name' => $request->name,
+            'reminder_time' => $request->time,
+            'is_everyday' => $request->is_everyday,
+        ]);
+
+        return response()->json(['success' => true, 'data' => $medication]);
     }
 
     public function destroy($id)

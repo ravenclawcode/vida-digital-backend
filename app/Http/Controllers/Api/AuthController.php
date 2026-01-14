@@ -78,7 +78,13 @@ class AuthController extends Controller
             'message' => 'Login berhasil',
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'user' => ['id' => $user->id, 'username' => $user->username, 'role_id' => $user->role_id]
+            'user' => [
+                'id' => $user->id,
+                'username' => $user->username,
+                'email' => $user->email,
+                'role_id' => $user->role_id,
+                'profile_photo_url' => $user->profile_photo_url
+            ]
         ]);
     }
 
@@ -95,39 +101,30 @@ class AuthController extends Controller
         $request->validate([
             'username' => 'required|string|max:255|unique:users,username,' . $user->id,
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:20480',
+            'gender' => 'nullable|string',
+            'profile_photo' => 'nullable|string',
         ]);
 
-        $data = [
+        $user->update([
             'username' => $request->username,
             'email' => $request->email,
-        ];
+            'gender' => $request->gender,
+            'profile_photo' => $request->profile_photo,
+        ]);
 
-        if ($request->hasFile('profile_photo')) {
-            if ($user->profile_photo) {
-                Storage::disk('public')->delete($user->profile_photo);
-            }
-
-            $path = $request->file('profile_photo')->store('profile_photos', 'public');
-            $data['profile_photo'] = $path;
+        if ($user->profile_photo && str_contains($user->profile_photo, 'assets/')) {
+            $user->profile_photo_url = $user->profile_photo;
+        } else if ($user->profile_photo) {
+            $user->profile_photo_url = asset('storage/' . $user->profile_photo);
+        } else {
+            $user->profile_photo_url = null;
         }
-
-        $user->update($data);
-
-        $user->profile_photo_url = $user->profile_photo ? asset('storage/' . $user->profile_photo) : null;
 
         return response()->json([
             'success' => true,
-            'message' => 'Profil berhasil diperbarui',
-            'user' => [
-                'id' => $user->id,
-                'username' => $user->username,
-                'email' => $user->email,
-                'role_id' => $user->role_id,
-                'profile_photo' => $user->profile_photo,
-                'profile_photo_url' => $user->profile_photo_url,
-            ]
-        ]);
+            'message' => 'Profile updated successfully',
+            'user' => $user
+        ], 200);
     }
 
     public function changePassword(Request $request)
@@ -211,9 +208,13 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        $user->profile_photo_url = $user->profile_photo
-            ? asset('storage/' . $user->profile_photo)
-            : null;
+        if ($user->profile_photo && str_contains($user->profile_photo, 'assets/')) {
+            $user->profile_photo_url = $user->profile_photo;
+        } else if ($user->profile_photo) {
+            $user->profile_photo_url = asset('storage/' . $user->profile_photo);
+        } else {
+            $user->profile_photo_url = null;
+        }
 
         return response()->json([
             'success' => true,

@@ -13,12 +13,10 @@ class User extends Authenticatable
     /** @use HasFactory\HasFactoryFactory */
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * Konfigurasi UUID sebagai Primary Key
-     */
     protected $primaryKey = 'id';
     protected $keyType = 'string';
     public $incrementing = false;
+    protected $appends = ['profile_photo_url'];
 
     protected static function boot()
     {
@@ -30,31 +28,23 @@ class User extends Authenticatable
         });
     }
 
-    /**
-     * Atribut yang dapat diisi secara massal (Mass Assignable)
-     */
     protected $fillable = [
         'role_id',
         'token_id',
         'username',
         'email',
         'password',
+        'gender',
         'otp_code',
         'otp_expires_at',
         'profile_photo',
     ];
 
-    /**
-     * Atribut yang disembunyikan saat serialisasi (JSON)
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Casting atribut ke tipe data tertentu
-     */
     protected function casts(): array
     {
         return [
@@ -71,5 +61,17 @@ class User extends Authenticatable
             'education_content_id',
             'user_id'
         );
+    }
+
+    public function getProfilePhotoUrlAttribute()
+    {
+        if (!$this->profile_photo)
+            return null;
+
+        if (str_contains($this->profile_photo, 'assets/')) {
+            return $this->profile_photo;
+        }
+
+        return asset('storage/' . $this->profile_photo);
     }
 }

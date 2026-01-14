@@ -45,7 +45,6 @@ class EducationController extends Controller
         } else {
             $data['video_url'] = null;
             $data['thumbnail'] = null;
-            // Penting: duration artikel diambil dari input manual admin
         }
 
         EducationContent::create($data);
