@@ -102,8 +102,8 @@
                                                 class="w-10 h-10 object-cover rounded-md mx-auto shadow" alt="Cover">
                                         @else
                                             <div class="w-10 h-10 bg-gray-100 rounded-md
-                                                                flex items-center justify-center
-                                                                text-gray-400 text-xs mx-auto">
+                                                                        flex items-center justify-center
+                                                                        text-gray-400 text-xs mx-auto">
                                                 N/A
                                             </div>
                                         @endif
@@ -118,7 +118,7 @@
 
                                     <td class="p-4 border-b text-center">
                                         <span class="px-2 py-1 text-xs font-semibold
-                                                         bg-blue-100 text-blue-700 rounded-full">
+                                                             bg-blue-100 text-blue-700 rounded-full">
                                             {{ $audio->category }}
                                         </span>
                                     </td>

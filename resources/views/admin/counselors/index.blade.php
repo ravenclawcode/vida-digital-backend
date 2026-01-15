@@ -77,7 +77,8 @@
                                             class="px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">Aktif</span>
                                     </td>
                                     <td class="p-4 text-sm text-gray-500 text-right">
-                                        {{ $counselor->created_at->format('d M Y') }}</td>
+                                        {{ $counselor->created_at->format('d M Y') }}
+                                    </td>
                                     <td class="p-4 text-center">
                                         <form action="{{ route('counselors.destroy', $counselor->id) }}" method="POST"
                                             onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun konselor ini?')">

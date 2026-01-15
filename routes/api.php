@@ -39,6 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/community/{id}/comment', [CommunityController::class, 'storeComment']);
     Route::get('/chat/history', [ChatbotController::class, 'getHistory']);
     Route::post('/chat/send', [ChatbotController::class, 'sendMessage']);
+    Route::delete('/chat/clear', [ChatbotController::class, 'clearHistory']);
 });
 
 Route::post('/validate-token', [AuthController::class, 'checkToken']);

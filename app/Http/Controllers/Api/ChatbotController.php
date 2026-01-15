@@ -56,15 +56,15 @@ class ChatbotController extends Controller
                 ])
                     ->timeout(30)
                     ->post($url, [
-                            'contents' => [
-                                [
-                                    'role' => 'user',
-                                    'parts' => [
-                                        ['text' => $prompt]
-                                    ]
+                        'contents' => [
+                            [
+                                'role' => 'user',
+                                'parts' => [
+                                    ['text' => $prompt]
                                 ]
                             ]
-                        ]);
+                        ]
+                    ]);
 
                 if (!$response->successful()) {
                     Log::error('Google API Detail Error', [
@@ -95,7 +95,7 @@ class ChatbotController extends Controller
                 return response()->json([
                     'sender' => 'bot',
                     'message' => $botResponse,
-                    'time' => $botChat->created_at->format('H.i')
+                    'time' => now()->toIso8601String(),
                 ]);
 
             } catch (\Exception $e) {
@@ -119,5 +119,11 @@ class ChatbotController extends Controller
             ]);
 
         return response()->json($history);
+    }
+
+    public function clearHistory()
+    {
+        ChatMessage::where('user_id', auth()->id())->delete();
+        return response()->json(['message' => 'Chat dibersihkan']);
     }
 }
