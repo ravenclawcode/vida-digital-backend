@@ -13,6 +13,32 @@ use Illuminate\Support\Facades\DB;
 
 class CommunityController extends Controller
 {
+    /**
+     * Filter konten terlarang (Nomor HP & Kata Kunci Kontak)
+     */
+    private function containsForbiddenContent($text)
+    {
+        // Regex untuk mendeteksi nomor telepon (contoh: 0812..., +62..., 085-...)
+        $phonePattern = '/(\+62|62|0)8[1-9][0-9]{6,10}/';
+        
+        // Daftar kata terlarang (Blacklist)
+        $forbiddenWords = ['wa', 'whatsapp', 'nomer', 'kontak', 'hubungi'];
+
+        // Cek pola nomor HP
+        if (preg_match($phonePattern, str_replace([' ', '-', '.'], '', $text))) {
+            return "Mohon tidak membagikan nomor telepon demi keamanan Anda.";
+        }
+
+        // Cek kata terlarang
+        foreach ($forbiddenWords as $word) {
+            if (stripos($text, $word) !== false) {
+                return "Mohon tidak membagikan informasi kontak pribadi.";
+            }
+        }
+
+        return null;
+    }
+
     public function index()
     {
         try {
@@ -58,6 +84,15 @@ class CommunityController extends Controller
             'category' => 'required|string',
             'content' => 'required|string|min:5',
         ]);
+
+        // Cek konten postingan
+        $error = $this->containsForbiddenContent($validated['content']);
+        if ($error) {
+            return response()->json([
+                'status' => 'error', 
+                'message' => $error
+            ], 422);
+        }
 
         return DB::transaction(function () use ($validated) {
             $post = CommunityPost::create([
@@ -109,6 +144,15 @@ class CommunityController extends Controller
         $validated = $request->validate([
             'comment' => 'required|string|min:2'
         ]);
+
+        // Cek konten komentar
+        $error = $this->containsForbiddenContent($validated['comment']);
+        if ($error) {
+            return response()->json([
+                'status' => 'error', 
+                'message' => $error
+            ], 422);
+        }
 
         $comment = CommunityComment::create([
             'community_post_id' => $postId,
