@@ -1,143 +1,83 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Manajemen Konten Edukasi') }}
-        </h2>
-    </x-slot>
-
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
 
-            @if(session('success'))
-                <div class="mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">
-                    {{ session('success') }}
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900">Daftar Edukasi</h3>
+                        <p class="text-sm text-gray-500">Kelola konten video dan artikel kesehatan mental.</p>
+                    </div>
+
+                    <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'tambah-edukasi')"
+                        class="bg-[#D83A64] hover:bg-pink-700 uppercase">
+                        {{ __('Tambah Konten') }}
+                    </x-primary-button>
                 </div>
-            @endif
-
-            <div class="bg-white p-6 shadow-sm sm:rounded-lg mb-8">
-                <h3 class="text-lg font-bold mb-6">Tambah Konten Baru</h3>
-
-                <form action="{{ route('education.store') }}" method="POST"
-                    class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    @csrf
-
-                    <div>
-                        <x-input-label value="Jenis Konten" />
-                        <select name="type" id="type_selector" class="w-full border-gray-300 rounded-md shadow-sm"
-                            onchange="updateForm()">
-                            <option value="video">Video (YouTube)</option>
-                            <option value="artikel">Artikel</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <x-input-label value="Kategori" />
-                        <select name="category" class="w-full border-gray-300 rounded-md shadow-sm" required>
-                            <option value="dasar">Dasar</option>
-                            <option value="kesehatan mental">Kesehatan Mental</option>
-                            <option value="gaya hidup">Gaya Hidup</option>
-                        </select>
-                    </div>
-
-                    <div class="md:col-span-2">
-                        <x-input-label value="Judul Konten" />
-                        <x-text-input name="title" class="w-full" required />
-                    </div>
-
-                    <div id="video_fields" class="md:col-span-2">
-                        <x-input-label value="URL Video YouTube" />
-                        <x-text-input name="video_url" class="w-full"
-                            placeholder="https://www.youtube.com/watch?v=xxxxxxx" />
-                        <p class="mt-1 text-xs text-gray-500">
-                            Thumbnail & durasi akan diambil otomatis dari YouTube
-                        </p>
-                    </div>
-
-                    <div class="md:col-span-2">
-                        <x-input-label id="label_description" value="Deskripsi Video" />
-                        <textarea name="description" class="w-full border-gray-300 rounded-md shadow-sm" rows="8"
-                            placeholder="Tulis di sini..." required></textarea>
-                    </div>
-
-                    <div id="artikel_fields" class="md:col-span-2 hidden space-y-4">
-                        <div class="p-4 bg-pink-50 border border-pink-200 rounded-md">
-                            <x-input-label value="Catatan Penting" class="text-pink-700 font-bold" />
-                            <textarea name="important_note" class="w-full border-pink-300 rounded-md mt-1" rows="2"
-                                placeholder="Pesan penting untuk pengguna (Opsional)"></textarea>
-                        </div>
-                    </div>
-
-                    <div id="duration_field" class="hidden">
-                        <x-input-label value="Estimasi Waktu Baca (Contoh: 5 Menit)" />
-                        <x-text-input name="duration" class="w-full" placeholder="5 Menit" />
-                    </div>
-
-                    <div class="md:col-span-2 text-right mt-4">
-                        <x-primary-button>
-                            Simpan Konten Edukasi
-                        </x-primary-button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="bg-white p-6 shadow-sm sm:rounded-lg">
-                <h3 class="text-lg font-bold mb-4">Daftar Edukasi</h3>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full border-collapse">
+                    <table class="w-full text-left border-collapse border border-gray-100">
                         <thead>
-                            <tr class="bg-gray-50 text-xs uppercase text-gray-600">
-                                <th class="p-4 border-b text-left">Konten</th>
+                            <tr class="bg-gray-50 text-gray-700 uppercase text-xs">
+                                <th class="p-4 border-b text-left">Judul Konten</th>
                                 <th class="p-4 border-b text-center">Tipe</th>
+                                <th class="p-4 border-b text-center">Kategori</th>
                                 <th class="p-4 border-b text-center">Durasi</th>
                                 <th class="p-4 border-b text-center">Likes</th>
                                 <th class="p-4 border-b text-center">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y">
+                        <tbody class="divide-y divide-gray-100">
                             @forelse($contents as $content)
-                                                    <tr class="hover:bg-gray-50">
-                                                        <td class="p-4">
-                                                            <div class="font-bold text-gray-900">
-                                                                {{ $content->title }}
-                                                            </div>
-                                                            <div class="text-xs text-indigo-600">
-                                                                {{ $content->category }}
-                                                            </div>
-                                                        </td>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="p-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ $content->title }}</div>
+                                    </td>
 
-                                                        <td class="p-4 text-center">
-                                                            <span class="px-2 py-1 text-xs font-bold rounded-full
-                                                                                                                                                                    {{ $content->type === 'video'
-                                ? 'bg-red-100 text-red-700'
-                                : 'bg-green-100 text-green-700' }}">
-                                                                {{ strtoupper($content->type) }}
-                                                            </span>
-                                                        </td>
+                                    <td class="p-4 text-center">
+                                        <span class="text-sm text-gray-900 font-medium capitalize">
+                                            {{ $content->type }}
+                                        </span>
+                                    </td>
 
-                                                        <td class="p-4 text-center text-sm">
-                                                            {{ $content->duration }}
-                                                        </td>
+                                    <td class="p-4 text-center">
+                                        <span style="color: #E43371; background-color: #FFE5F0;"
+                                            class="px-3 py-1 text-xs font-bold rounded-full tracking-tight capitalize">
+                                            {{ $content->category }}
+                                        </span>
+                                    </td>
 
-                                                        <td class="p-4 text-center font-bold text-pink-500">
-                                                            {{ number_format($content->likes ?? 0) }}
-                                                        </td>
+                                    <td class="p-4 text-center text-sm text-gray-600 font-medium">
+                                        {{ $content->duration }}
+                                    </td>
 
-                                                        <td class="p-4 text-center">
-                                                            <form method="POST" action="{{ route('education.destroy', $content->id) }}"
-                                                                onsubmit="return confirm('Hapus konten ini?')">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button class="text-red-500 hover:text-red-700">
-                                                                    🗑️
-                                                                </button>
-                                                            </form>
-                                                        </td>
-                                                    </tr>
+                                    <td class="p-4 text-center text-sm text-gray-900 font-medium">
+                                        {{ number_format($content->likes ?? 0) }}
+                                    </td>
+
+                                    <td class="p-4 text-center">
+                                        <form method="POST" action="{{ route('education.destroy', $content->id) }}"
+                                            onsubmit="return confirm('Apakah Anda yakin ingin menghapus konten ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-500 hover:text-red-700 transition">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="p-6 text-center text-gray-400 italic">
-                                        Belum ada konten edukasi.
+                                    <td colspan="6" class="py-24 text-center">
+                                        <div class="flex flex-col items-center justify-center w-full">
+                                            <span class="text-gray-400 italic text-sm tracking-wide">
+                                                Belum ada konten edukasi yang ditambahkan.
+                                            </span>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforelse
@@ -148,28 +88,93 @@
         </div>
     </div>
 
+    <x-modal name="tambah-edukasi" :show="$errors->any()" focusable>
+        <form action="{{ route('education.store') }}" method="POST" class="p-6">
+            @csrf
+            <h2 class="text-lg font-medium text-gray-900">Tambah Konten Edukasi Baru</h2>
+            <p class="mt-1 text-sm text-gray-600 italic">Pilih jenis konten (Video/Artikel) dan lengkapi detailnya.</p>
+
+            <div class="mt-8 space-y-5">
+                <div>
+                    <x-input-label for="type_selector" value="Jenis Konten" />
+                    <select name="type" id="type_selector"
+                        class="mt-2 w-full border-gray-300 rounded-md shadow-sm focus:border-pink-500 focus:ring-pink-500 text-sm"
+                        onchange="updateForm()">
+                        <option value="video">Video</option>
+                        <option value="artikel">Artikel</option>
+                    </select>
+                </div>
+
+                <div>
+                    <x-input-label for="category" value="Kategori" />
+                    <select name="category"
+                        class="mt-2 w-full border-gray-300 rounded-md shadow-sm focus:border-pink-500 focus:ring-pink-500 text-sm"
+                        required>
+                        <option value="dasar">Dasar</option>
+                        <option value="kesehatan mental">Kesehatan Mental</option>
+                        <option value="gaya hidup">Gaya Hidup</option>
+                    </select>
+                </div>
+
+                <div>
+                    <x-input-label for="title" value="Judul" />
+                    <x-text-input name="title" type="text" class="mt-2 block w-full text-sm"
+                        placeholder="Masukkan judul" required />
+                </div>
+
+                <div id="video_fields">
+                    <x-input-label for="video_url" value="URL Video YouTube" />
+                    <x-text-input name="video_url" type="text" class="mt-2 block w-full text-sm"
+                        placeholder="https://www.youtube.com/watch?v=xxxxxxx" />
+                </div>
+
+                <div>
+                    <x-input-label id="label_description" value="Deskripsi" />
+                    <textarea name="description" id="main_content_area"
+                        class="mt-2 w-full border-gray-300 rounded-md shadow-sm focus:border-pink-500 focus:ring-pink-500 text-sm"
+                        rows="5" placeholder="Masukkan deskripsi singkat atau isi artikel" required></textarea>
+                </div>
+
+                <div id="artikel_fields" class="hidden space-y-5">
+                    <div>
+                        <x-input-label for="important_note" value="Catatan Penting (Opsional)" />
+                        <textarea name="important_note" id="important_note"
+                            class="mt-2 w-full border-gray-300 rounded-md shadow-sm focus:border-pink-500 focus:ring-pink-500 text-sm"
+                            rows="2" placeholder="Pesan tambahan untuk pembaca"></textarea>
+                    </div>
+
+                    <div id="duration_field">
+                        <x-input-label for="duration" value="Estimasi Waktu Baca" />
+                        <x-text-input name="duration" type="text" class="mt-2 block w-full text-sm"
+                            placeholder="7 Menit" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-end">
+                <x-secondary-button x-on:click="$dispatch('close')">Batal</x-secondary-button>
+                <x-primary-button class="ms-3 bg-[#D83A64] hover:bg-pink-700 uppercase">Simpan</x-primary-button>
+            </div>
+        </form>
+    </x-modal>
+
     <script>
         function updateForm() {
-            const type = document.getElementById('type_selector').value;
+            const typeSelector = document.getElementById('type_selector');
+            const type = typeSelector.value;
             const isVideo = type === 'video';
-
-            document.getElementById('video_fields')
-                .classList.toggle('hidden', !isVideo);
-
-            document.getElementById('artikel_fields')
-                .classList.toggle('hidden', isVideo);
-
-            document.getElementById('duration_field')
-                .classList.toggle('hidden', isVideo);
-
             const label = document.getElementById('label_description');
+            const textarea = document.getElementById('main_content_area');
+            document.getElementById('video_fields').classList.toggle('hidden', !isVideo);
+            document.getElementById('artikel_fields').classList.toggle('hidden', isVideo);
             if (isVideo) {
-                label.innerText = "Deskripsi Video";
+                label.innerText = "Deskripsi";
+                textarea.placeholder = "Masukkan deskripsi singkat";
             } else {
-                label.innerText = "Isi Lengkap Artikel";
+                label.innerText = "Isi Artikel";
+                textarea.placeholder = "Masukkan isi artikel";
             }
         }
-
         document.addEventListener('DOMContentLoaded', updateForm);
     </script>
 </x-app-layout>

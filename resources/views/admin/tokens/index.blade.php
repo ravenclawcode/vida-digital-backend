@@ -1,78 +1,83 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Generate Token Aktivasi') }}
-        </h2>
-    </x-slot>
-
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+
+            @if (session('success'))
+                <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
+                    x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-y-5 opacity-0"
+                    x-transition:enter-end="translate-y-0 opacity-100" x-transition:leave="transition ease-in duration-300"
+                    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                    class="fixed bottom-8 right-8 z-50 px-6 py-3 bg-white text-gray-700 text-sm rounded-lg shadow-xl border-l-4 border-green-500 font-medium ring-1 ring-black ring-opacity-5">
+                    {{ session('success') }}
+                </div>
+            @endif
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
 
-                <div class="mb-6">
-                    <h3 class="text-lg font-medium text-gray-900">Kontrol Token Registrasi</h3>
-                    <p class="text-sm text-gray-600">Buat kode unik untuk pasien baru agar mereka dapat mendaftar secara
-                        anonim.</p>
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900">Kontrol Token Registrasi</h3>
+                        <p class="text-sm text-gray-500">Buat kode unik untuk pasien baru agar mereka dapat mendaftar.
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <a href="{{ route('tokens.index') }}"
+                                class="inline-flex items-center justify-center px-2 py-[7px] bg-white border border-gray-200 rounded-md shadow-sm hover:bg-gray-50 transition-all duration-200"
+                                title="Refresh Halaman">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                            </a>
+
+                            <form action="{{ route('tokens.store') }}" method="POST">
+                                @csrf
+                                <x-primary-button class="bg-[#D83A64] hover:bg-pink-700 uppercase">
+                                    {{ __('Buat Token') }}
+                                </x-primary-button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
 
-                @if(session('success'))
-                    <div class="mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded shadow-sm">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if(session('error'))
-                    <div class="mb-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded shadow-sm">
-                        {{ session('error') }}
-                    </div>
-                @endif
-
-                <form action="{{ route('tokens.store') }}" method="POST">
-                    @csrf
-                    <x-primary-button>
-                        {{ __('Buat Token Baru') }}
-                    </x-primary-button>
-                </form>
-
-                <div class="mt-8 overflow-x-auto">
+                <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse border border-gray-100">
                         <thead>
                             <tr class="bg-gray-50 text-gray-700 uppercase text-xs">
                                 <th class="p-4 border-b">Kode Token</th>
                                 <th class="p-4 border-b text-center">Status</th>
-                                <th class="p-4 border-b">Tanggal Dibuat</th>
+                                <th class="p-4 border-b text-right">Dibuat Pada</th>
                                 <th class="p-4 border-b text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @forelse($tokens as $token)
                                 <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="p-4 border-b font-mono font-bold text-blue-600 tracking-wider">
+                                    <td class="p-4 text-sm font-medium font-mono text-gray-900 tracking-wider">
                                         {{ $token->token_code }}
                                     </td>
-                                    <td class="p-4 border-b text-center">
+                                    <td class="p-4 text-center">
                                         @if($token->is_used)
-                                            <span class="text-red-600 bg-red-100 px-3 py-1 rounded-full text-xs font-semibold">
-                                                Terpakai
-                                            </span>
+                                            <span
+                                                class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded-full">Terpakai</span>
                                         @else
                                             <span
-                                                class="text-green-600 bg-green-100 px-3 py-1 rounded-full text-xs font-semibold">
-                                                Tersedia
-                                            </span>
+                                                class="px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">Tersedia</span>
                                         @endif
                                     </td>
-                                    <td class="p-4 border-b text-sm text-gray-500">
-                                        {{ $token->created_at->format('d M Y, H:i') }}
+                                    <td class="p-4 text-sm text-gray-500 text-right">
+                                        {{ $token->created_at->format('d M Y') }}
                                     </td>
-                                    <td class="p-4 border-b text-center">
+                                    <td class="p-4 text-center">
                                         @if(!$token->is_used)
                                             <form action="{{ route('tokens.destroy', $token->id) }}" method="POST"
-                                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus token yang belum terpakai ini?')">
+                                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus token ini?')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-red-500 hover:text-red-700 transition"
-                                                    title="Hapus Token">
+                                                <button type="submit" class="text-red-500 hover:text-red-700 transition">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" fill="none"
                                                         viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -81,7 +86,7 @@
                                                 </button>
                                             </form>
                                         @else
-                                            <span class="text-gray-400">
+                                            <span class="text-gray-300" title="Token yang sudah terpakai tidak bisa dihapus">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" fill="none"
                                                     viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -93,14 +98,18 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="p-8 text-center text-gray-400 italic">Belum ada token yang
-                                        dibuat.</td>
+                                    <td colspan="5" class="py-24 text-center">
+                                        <div class="flex flex-col items-center justify-center w-full">
+                                            <span class="text-gray-400 italic text-sm tracking-wide">
+                                                Belum ada token yang dibuat.
+                                            </span>
+                                        </div>
+                                    </td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
-
             </div>
         </div>
     </div>
