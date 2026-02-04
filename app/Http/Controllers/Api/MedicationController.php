@@ -91,9 +91,9 @@ class MedicationController extends Controller
         return response()->json(['success' => true, 'data' => $medication]);
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        Medication::where('id', $id)->where('user_id', auth()->id())->delete();
+        Medication::where('id', $id)->where('user_id', $request->user()->id)->delete();
         return response()->json(['success' => true, 'message' => 'Obat berhasil dihapus']);
     }
 }

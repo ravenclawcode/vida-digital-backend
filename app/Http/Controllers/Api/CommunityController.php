@@ -82,7 +82,7 @@ class CommunityController extends Controller
     {
         $validated = $request->validate([
             'category' => 'required|string',
-            'content' => 'required|string|min:5',
+            'content' => 'required|string|min:1',
         ]);
 
         // Cek konten postingan
@@ -142,7 +142,7 @@ class CommunityController extends Controller
     public function storeComment(Request $request, $postId)
     {
         $validated = $request->validate([
-            'comment' => 'required|string|min:2'
+            'comment' => 'required|string|min:1'
         ]);
 
         // Cek konten komentar

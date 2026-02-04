@@ -9,12 +9,13 @@ use App\Models\Medication;
 use App\Models\MedicationLog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
     public function getDashboard(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $today = Carbon::now()->format('Y-m-d');
 
         $medications = Medication::where('user_id', $user->id)

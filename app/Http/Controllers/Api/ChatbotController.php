@@ -9,13 +9,14 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Client\Response;
 
 class ChatbotController extends Controller
 {
     public function sendMessage(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $request->validate(['message' => 'required|string|max:1000']);
 
         if ($user->last_chat_at && Carbon::now()->diffInHours($user->last_chat_at) >= 24) {
@@ -97,7 +98,6 @@ class ChatbotController extends Controller
                     'message' => $botResponse,
                     'time' => now()->toIso8601String(),
                 ]);
-
             } catch (\Exception $e) {
                 Log::error('Chatbot Error: ' . $e->getMessage());
                 throw $e;
@@ -107,7 +107,7 @@ class ChatbotController extends Controller
 
     public function getHistory()
     {
-        $history = ChatMessage::where('user_id', auth()->id())
+        $history = ChatMessage::where('user_id', Auth::user()->id)
             ->orderBy('created_at', 'asc')
             ->get()
             ->map(fn($chat) => [
@@ -123,7 +123,7 @@ class ChatbotController extends Controller
 
     public function clearHistory()
     {
-        ChatMessage::where('user_id', auth()->id())->delete();
+        ChatMessage::where('user_id', Auth::user()->id)->delete();
         return response()->json(['message' => 'Chat dibersihkan']);
     }
 }

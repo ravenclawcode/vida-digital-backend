@@ -35,15 +35,15 @@
                                     </td>
 
                                     <td class="p-4 text-center">
-                                        <span class="text-sm text-gray-900 font-medium capitalize">
-                                            {{ $content->type }}
+                                        <span class="text-sm text-gray-900 font-medium">
+                                            {{ ucfirst($content->type) }}
                                         </span>
                                     </td>
 
                                     <td class="p-4 text-center">
                                         <span style="color: #E43371; background-color: #FFE5F0;"
-                                            class="px-3 py-1 text-xs font-bold rounded-full tracking-tight capitalize">
-                                            {{ $content->category }}
+                                            class="px-3 py-1 text-xs font-bold rounded-full tracking-tight">
+                                            {{ Str::title($content->category) }}
                                         </span>
                                     </td>
 
