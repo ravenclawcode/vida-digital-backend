@@ -22,10 +22,10 @@ class MedicationController extends Controller
                     ->orWhere('is_everyday', true);
             })
             ->with([
-                    'logs' => function ($q) use ($today) {
-                        $q->whereDate('date', $today);
-                    }
-                ])
+                'logs' => function ($q) use ($today) {
+                    $q->whereDate('date', $today);
+                }
+            ])
             ->get()
             ->map(function ($med) {
                 $log = $med->logs->first();

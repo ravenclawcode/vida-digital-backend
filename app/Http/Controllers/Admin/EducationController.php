@@ -86,5 +86,4 @@ class EducationController extends Controller
 
         return gmdate($seconds >= 3600 ? "H:i:s" : "i:s", $seconds);
     }
-
 }

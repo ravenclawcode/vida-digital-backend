@@ -18,18 +18,14 @@ class CommunityController extends Controller
      */
     private function containsForbiddenContent($text)
     {
-        // Regex untuk mendeteksi nomor telepon (contoh: 0812..., +62..., 085-...)
         $phonePattern = '/(\+62|62|0)8[1-9][0-9]{6,10}/';
-        
-        // Daftar kata terlarang (Blacklist)
+
         $forbiddenWords = ['wa', 'whatsapp', 'nomer', 'kontak', 'hubungi'];
 
-        // Cek pola nomor HP
         if (preg_match($phonePattern, str_replace([' ', '-', '.'], '', $text))) {
             return "Mohon tidak membagikan nomor telepon demi keamanan Anda.";
         }
 
-        // Cek kata terlarang
         foreach ($forbiddenWords as $word) {
             if (stripos($text, $word) !== false) {
                 return "Mohon tidak membagikan informasi kontak pribadi.";
@@ -85,11 +81,10 @@ class CommunityController extends Controller
             'content' => 'required|string|min:1',
         ]);
 
-        // Cek konten postingan
         $error = $this->containsForbiddenContent($validated['content']);
         if ($error) {
             return response()->json([
-                'status' => 'error', 
+                'status' => 'error',
                 'message' => $error
             ], 422);
         }
@@ -145,11 +140,10 @@ class CommunityController extends Controller
             'comment' => 'required|string|min:1'
         ]);
 
-        // Cek konten komentar
         $error = $this->containsForbiddenContent($validated['comment']);
         if ($error) {
             return response()->json([
-                'status' => 'error', 
+                'status' => 'error',
                 'message' => $error
             ], 422);
         }
