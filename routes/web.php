@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\TokenController;
 use App\Http\Controllers\Admin\MindfulnessAudioController;
 use App\Http\Controllers\Admin\EducationController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\PhqQuestionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -28,6 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/tokens/{id}', [TokenController::class, 'destroy'])->name('tokens.destroy');
     Route::resource('audio', MindfulnessAudioController::class);
     Route::resource('education', EducationController::class);
+    Route::resource('phq-questions', PhqQuestionController::class);
 });
 
 require __DIR__ . '/auth.php';

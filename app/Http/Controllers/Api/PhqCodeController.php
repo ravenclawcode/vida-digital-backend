@@ -46,4 +46,23 @@ class PhqCodeController extends Controller
             'data' => $code
         ]);
     }
+
+    public function markAsUsed(Request $request)
+    {
+        $request->validate(['token_code' => 'required|string']);
+
+        $code = PhqCode::where('token_code', $request->token_code)->first();
+
+        if ($code) {
+            $code->is_used = true;
+            $code->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Kode berhasil digunakan.'
+            ]);
+        }
+
+        return response()->json(['success' => false], 404);
+    }
 }

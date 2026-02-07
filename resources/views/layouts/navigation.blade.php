@@ -24,6 +24,9 @@
                     <x-nav-link :href="route('education.index')" :active="request()->routeIs('education.*')">
                         {{ __('Konten Edukasi') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('phq-questions.index')" :active="request()->routeIs('phq-questions.*')">
+                        {{ __('Soal PHQ-9') }}
+                    </x-nav-link>
                 </div>
             </div>
 

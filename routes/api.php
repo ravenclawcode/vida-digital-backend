@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\CommunityController;
 use App\Http\Controllers\Api\ChatbotController;
 use App\Http\Controllers\Api\PhqCodeController;
+use App\Http\Controllers\Api\PhqController;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -43,6 +44,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/chat/clear', [ChatbotController::class, 'clearHistory']);
     Route::post('/phq-generate', [PhqCodeController::class, 'generate']);
     Route::post('/phq-validate', [PhqCodeController::class, 'validateCode']);
+    Route::get('/phq-questions', [PhqController::class, 'getQuestionsForApp']);
+    Route::post('/phq-mark-used', [PhqCodeController::class, 'markAsUsed']);
 });
 
 Route::post('/validate-token', [AuthController::class, 'checkToken']);
