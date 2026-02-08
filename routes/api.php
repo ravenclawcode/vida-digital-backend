@@ -46,6 +46,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/phq-validate', [PhqCodeController::class, 'validateCode']);
     Route::get('/phq-questions', [PhqController::class, 'getQuestionsForApp']);
     Route::post('/phq-mark-used', [PhqCodeController::class, 'markAsUsed']);
+    Route::get('/counselor/patients', [CounselorController::class, 'getPatients']);
+    Route::post('/soap', [CounselorController::class, 'storeSoap']);
 });
 
 Route::post('/validate-token', [AuthController::class, 'checkToken']);
