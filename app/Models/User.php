@@ -10,7 +10,6 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory\HasFactoryFactory */
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $primaryKey = 'id';
@@ -53,25 +52,27 @@ class User extends Authenticatable
         ];
     }
 
-    public function likedByUsers()
-    {
-        return $this->belongsToMany(
-            \App\Models\User::class,
-            'education_likes',
-            'education_content_id',
-            'user_id'
-        );
-    }
-
     public function getProfilePhotoUrlAttribute()
     {
-        if (!$this->profile_photo)
-            return null;
+        if (!$this->profile_photo) return null;
 
-        if (str_contains($this->profile_photo, 'assets/')) {
-            return $this->profile_photo;
-        }
+        return str_contains($this->profile_photo, 'assets/')
+            ? $this->profile_photo
+            : asset('storage/' . $this->profile_photo);
+    }
 
-        return asset('storage/' . $this->profile_photo);
+    public function getIsOnlineAttribute()
+    {
+        return $this->last_activity && $this->last_activity->diffInMinutes(now()) < 5;
+    }
+
+    public function messagesSent()
+    {
+        return $this->hasMany(PrivateMessage::class, 'sender_id');
+    }
+
+    public function messagesReceived()
+    {
+        return $this->hasMany(PrivateMessage::class, 'receiver_id');
     }
 }

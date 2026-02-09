@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\CommunityController;
 use App\Http\Controllers\Api\ChatbotController;
 use App\Http\Controllers\Api\PhqCodeController;
 use App\Http\Controllers\Api\PhqController;
+use App\Http\Controllers\Api\PrivateChatController;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -40,7 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/community/{id}/like', [CommunityController::class, 'toggleLike']);
     Route::post('/community/{id}/comment', [CommunityController::class, 'storeComment']);
     Route::get('/chat/history', [ChatbotController::class, 'getHistory']);
-    Route::post('/chat/send', [ChatbotController::class, 'sendMessage']);
+    Route::post('/chatbot/send', [ChatbotController::class, 'sendMessage']);
     Route::delete('/chat/clear', [ChatbotController::class, 'clearHistory']);
     Route::post('/phq-generate', [PhqCodeController::class, 'generate']);
     Route::post('/phq-validate', [PhqCodeController::class, 'validateCode']);
@@ -48,6 +49,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/phq-mark-used', [PhqCodeController::class, 'markAsUsed']);
     Route::get('/counselor/patients', [CounselorController::class, 'getPatients']);
     Route::post('/soap', [CounselorController::class, 'storeSoap']);
+    Route::get('/chat/contacts', [PrivateChatController::class, 'getContacts']);
+    Route::get('/chat/messages/{receiver_id}', [PrivateChatController::class, 'getMessages']);
+    Route::post('/chat/send', [PrivateChatController::class, 'sendMessage']);
+    Route::delete('/chat/messages/{other_user_id}', [PrivateChatController::class, 'destroyMessages']);
+    Route::get('/counselor/patients', [CounselorController::class, 'getPatients']);
+    Route::get('/counselor/patients/{id}', [CounselorController::class, 'show']);
 });
 
 Route::post('/validate-token', [AuthController::class, 'checkToken']);
