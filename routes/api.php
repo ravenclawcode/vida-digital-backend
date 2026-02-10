@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\ChatbotController;
 use App\Http\Controllers\Api\PhqCodeController;
 use App\Http\Controllers\Api\PhqController;
 use App\Http\Controllers\Api\PrivateChatController;
+use App\Http\Controllers\Api\PhqResultController;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -55,6 +56,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/chat/messages/{other_user_id}', [PrivateChatController::class, 'destroyMessages']);
     Route::get('/counselor/patients', [CounselorController::class, 'getPatients']);
     Route::get('/counselor/patients/{id}', [CounselorController::class, 'show']);
+    Route::post('/phq-results', [PhqResultController::class, 'store']);
 });
 
 Route::post('/validate-token', [AuthController::class, 'checkToken']);

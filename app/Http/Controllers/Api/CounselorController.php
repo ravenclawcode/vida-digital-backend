@@ -103,9 +103,18 @@ class CounselorController extends Controller
             }
         }
 
-        $latestPhq = PhqResult::where('user_id', $patient->id)
+        $phqHistory = PhqResult::where('user_id', $patient->id)
             ->orderBy('created_at', 'desc')
-            ->first();
+            ->get()
+            ->map(function ($phq) {
+                return [
+                    'score' => $phq->total_score,
+                    'date' => $phq->created_at->format('d M'),
+                    'category' => $phq->category,
+                ];
+            });
+
+        $latestPhq = $phqHistory->first();
 
         return response()->json([
             'success' => true,
@@ -116,8 +125,9 @@ class CounselorController extends Controller
                 'status' => $this->determineStatus($patient),
                 'medication_logs' => $medicationLogs,
                 'weekly_moods' => $weeklyMoods,
-                'last_phq_score' => $latestPhq ? $latestPhq->total_score : 0,
-                'last_phq_date' => $latestPhq ? $latestPhq->created_at->format('d M') : '-',
+                'last_phq_score' => $latestPhq ? $latestPhq['score'] : 0,
+                'last_phq_date' => $latestPhq ? $latestPhq['date'] : '-',
+                'phq_history' => $phqHistory,
             ]
         ]);
     }

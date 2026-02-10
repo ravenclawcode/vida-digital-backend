@@ -13,7 +13,6 @@ return new class extends Migration
 {
     Schema::create('phq_results', function (Blueprint $table) {
         $table->id();
-        // Ubah dari unsignedBigInteger ke foreignUuid agar sama dengan users.id
         $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
         $table->integer('total_score');
         $table->string('category');
