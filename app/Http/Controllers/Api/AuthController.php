@@ -9,7 +9,6 @@ use App\Models\RegistrationToken;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
@@ -219,5 +218,18 @@ class AuthController extends Controller
             'success' => true,
             'user' => $user
         ]);
+    }
+
+    public function updateStatus(Request $request)
+    {
+        $request->validate(['is_online' => 'required|boolean']);
+
+        $user = $request->user();
+        $user->update([
+            'is_online' => $request->is_online,
+            'last_seen' => now()
+        ]);
+
+        return response()->json(['success' => true]);
     }
 }

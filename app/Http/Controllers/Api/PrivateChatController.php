@@ -14,6 +14,8 @@ class PrivateChatController extends Controller
     {
         $user = Auth::user();
 
+        \Carbon\Carbon::setLocale('id');
+
         if ($user->role_id == 3) {
             $contacts = User::where('role_id', 2)->get();
         } else {
@@ -36,13 +38,20 @@ class PrivateChatController extends Controller
                 ->where('is_read', false)
                 ->count();
 
+            $statusText = $contact->is_online
+                ? 'Online'
+                : ($contact->last_seen
+                    ? $contact->last_seen->diffForHumans()
+                    : $contact->updated_at->diffForHumans());
+
             return [
                 'id' => (string) $contact->id,
                 'username' => $contact->username,
-                'last_message' => $lastMsg ? $lastMsg->message : 'Ketuk untuk memulai percakapan baru',
+                'last_message' => $lastMsg ? $lastMsg->message : 'Ketuk untuk memulai...',
                 'last_message_time' => $lastMsg ? $lastMsg->created_at->format('H:i') : '',
                 'unread_count' => (int) $unreadCount,
                 'is_online' => (bool) $contact->is_online,
+                'last_seen_display' => $statusText,
             ];
         }));
     }
@@ -62,7 +71,7 @@ class PrivateChatController extends Controller
                 'is_read' => false
             ]);
 
-            return response()->json($chat, 201);
+            return response()->json($chat->fresh(), 201);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Gagal mengirim pesan',

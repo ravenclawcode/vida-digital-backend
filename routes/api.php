@@ -57,6 +57,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/counselor/patients', [CounselorController::class, 'getPatients']);
     Route::get('/counselor/patients/{id}', [CounselorController::class, 'show']);
     Route::post('/phq-results', [PhqResultController::class, 'store']);
+    Route::post('/user/status', [AuthController::class, 'updateStatus']);
 });
 
 Route::post('/validate-token', [AuthController::class, 'checkToken']);

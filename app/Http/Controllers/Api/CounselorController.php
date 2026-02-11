@@ -27,6 +27,7 @@ class CounselorController extends Controller
 
     public function getPatients(Request $request)
     {
+        \Carbon\Carbon::setLocale('id');
         $patients = User::where('role_id', 3)->get()->map(function ($patient) {
             $totalLogs = MedicationLog::whereHas('medication', function ($q) use ($patient) {
                 $q->where('user_id', $patient->id);
@@ -45,6 +46,8 @@ class CounselorController extends Controller
                 'status' => $this->determineStatus($patient),
                 'progress' => $progress,
                 'unread' => 0,
+                'is_online' => (bool) $patient->is_online,
+                'last_seen_display' => $patient->is_online ? 'Online' : ($patient->last_seen ? $patient->last_seen->diffForHumans() : 'Offline'),
             ];
         });
 
@@ -116,11 +119,21 @@ class CounselorController extends Controller
 
         $latestPhq = $phqHistory->first();
 
+        \Carbon\Carbon::setLocale('id');
+        $statusText = $patient->is_online
+            ? 'Online'
+            : ($patient->last_seen
+                ? $patient->last_seen->diffForHumans()
+                : $patient->updated_at->diffForHumans());
+
         return response()->json([
             'success' => true,
             'data' => [
                 'id' => $patient->id,
                 'name' => $patient->username,
+                'is_online' => (bool) $patient->is_online,
+                'last_seen_display' => $statusText,
+
                 'progress' => $this->calculateProgress($patient),
                 'status' => $this->determineStatus($patient),
                 'medication_logs' => $medicationLogs,

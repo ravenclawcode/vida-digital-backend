@@ -37,6 +37,8 @@ class User extends Authenticatable
         'otp_code',
         'otp_expires_at',
         'profile_photo',
+        'is_online',
+        'last_seen',
     ];
 
     protected $hidden = [
@@ -49,6 +51,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'last_seen' => 'datetime',
         ];
     }
 
@@ -61,10 +64,10 @@ class User extends Authenticatable
             : asset('storage/' . $this->profile_photo);
     }
 
-    public function getIsOnlineAttribute()
-    {
-        return $this->last_activity && $this->last_activity->diffInMinutes(now()) < 5;
-    }
+    // public function getIsOnlineAttribute()
+    // {
+    //     return $this->last_activity && $this->last_activity->diffInMinutes(now()) < 5;
+    // }
 
     public function messagesSent()
     {
