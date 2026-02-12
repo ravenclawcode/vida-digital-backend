@@ -29,57 +29,57 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @forelse($contents as $content)
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="p-4">
-                                        <div class="text-sm font-medium text-gray-900">{{ $content->title }}</div>
-                                    </td>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="p-4">
+                                    <div class="text-sm font-medium text-gray-900">{{ $content->title }}</div>
+                                </td>
 
-                                    <td class="p-4 text-center">
-                                        <span class="text-sm text-gray-900 font-medium">
-                                            {{ ucfirst($content->type) }}
-                                        </span>
-                                    </td>
+                                <td class="p-4 text-center">
+                                    <span class="text-sm text-gray-900 font-medium">
+                                        {{ ucfirst($content->type) }}
+                                    </span>
+                                </td>
 
-                                    <td class="p-4 text-center">
-                                        <span style="color: #E43371; background-color: #FFE5F0;"
-                                            class="px-3 py-1 text-xs font-bold rounded-full tracking-tight">
-                                            {{ Str::title($content->category) }}
-                                        </span>
-                                    </td>
+                                <td class="p-4 text-center">
+                                    <span style="color: #E43371; background-color: #FFE5F0;"
+                                        class="px-3 py-1 text-xs font-bold rounded-full tracking-tight">
+                                        {{ Str::title($content->category) }}
+                                    </span>
+                                </td>
 
-                                    <td class="p-4 text-center text-sm text-gray-600 font-medium">
-                                        {{ $content->duration }}
-                                    </td>
+                                <td class="p-4 text-center text-sm text-gray-600 font-medium">
+                                    {{ $content->duration }}
+                                </td>
 
-                                    <td class="p-4 text-center text-sm text-gray-900 font-medium">
-                                        {{ number_format($content->likes ?? 0) }}
-                                    </td>
+                                <td class="p-4 text-center text-sm text-gray-900 font-medium">
+                                    {{ number_format($content->likes ?? 0) }}
+                                </td>
 
-                                    <td class="p-4 text-center">
-                                        <form method="POST" action="{{ route('education.destroy', $content->id) }}"
-                                            onsubmit="return confirm('Apakah Anda yakin ingin menghapus konten ini?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-500 hover:text-red-700 transition">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
+                                <td class="p-4 text-center">
+                                    <form method="POST" action="{{ route('education.destroy', $content->id) }}"
+                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus konten ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-500 hover:text-red-700 transition">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
                             @empty
-                                <tr>
-                                    <td colspan="6" class="py-24 text-center">
-                                        <div class="flex flex-col items-center justify-center w-full">
-                                            <span class="text-gray-400 italic text-sm tracking-wide">
-                                                Belum ada konten edukasi yang ditambahkan.
-                                            </span>
-                                        </div>
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td colspan="6" class="py-24 text-center">
+                                    <div class="flex flex-col items-center justify-center w-full">
+                                        <span class="text-gray-400 italic text-sm tracking-wide">
+                                            Belum ada konten edukasi yang ditambahkan.
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
                             @endforelse
                         </tbody>
                     </table>

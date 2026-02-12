@@ -13,9 +13,6 @@ use Illuminate\Support\Facades\DB;
 
 class CommunityController extends Controller
 {
-    /**
-     * Filter konten terlarang (Nomor HP & Kata Kunci Kontak)
-     */
     private function containsForbiddenContent($text)
     {
         $phonePattern = '/(\+62|62|0)8[1-9][0-9]{6,10}/';

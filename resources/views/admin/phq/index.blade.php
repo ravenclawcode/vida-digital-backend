@@ -34,14 +34,14 @@
 
                                     <div class="space-y-1.5 ml-1">
                                         @if($q->options)
-                                            @foreach($q->options as $opt)
-                                            <div class="flex items-center text-[12px] text-gray-600">
-                                                <span class="w-5 h-5 bg-gray-50 text-[#D83A64] border border-gray-200 flex items-center justify-center rounded-md text-[10px] font-bold mr-3 shrink-0">
-                                                    {{ $opt['score'] }}
-                                                </span>
-                                                <span>{{ $opt['text'] }}</span>
-                                            </div>
-                                            @endforeach
+                                        @foreach($q->options as $opt)
+                                        <div class="flex items-center text-[12px] text-gray-600">
+                                            <span class="w-5 h-5 bg-gray-50 text-[#D83A64] border border-gray-200 flex items-center justify-center rounded-md text-[10px] font-bold mr-3 shrink-0">
+                                                {{ $opt['score'] }}
+                                            </span>
+                                            <span>{{ $opt['text'] }}</span>
+                                        </div>
+                                        @endforeach
                                         @endif
                                     </div>
                                 </td>
