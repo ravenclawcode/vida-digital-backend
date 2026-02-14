@@ -9,8 +9,6 @@ use Illuminate\Http\JsonResponse;
 class PhqController extends Controller
 {
     /**
-     * Mengambil daftar pertanyaan PHQ.
-     *
      * @return JsonResponse
      */
     public function getQuestionsForApp()

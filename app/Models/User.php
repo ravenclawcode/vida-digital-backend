@@ -64,11 +64,6 @@ class User extends Authenticatable
             : asset('storage/' . $this->profile_photo);
     }
 
-    // public function getIsOnlineAttribute()
-    // {
-    //     return $this->last_activity && $this->last_activity->diffInMinutes(now()) < 5;
-    // }
-
     public function messagesSent()
     {
         return $this->hasMany(PrivateMessage::class, 'sender_id');

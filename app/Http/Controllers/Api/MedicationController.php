@@ -13,32 +13,56 @@ class MedicationController extends Controller
 
     public function getDailySchedule(Request $request)
     {
-        $user = $request->user();
-        $today = now()->toDateString();
+        try {
+            $user = $request->user();
+            $today = now()->toDateString();
+            $now = now()->timezone('Asia/Makassar');
 
-        $medications = Medication::where('user_id', $user->id)
-            ->where(function ($query) use ($today) {
-                $query->whereDate('created_at', $today)
-                    ->orWhere('is_everyday', true);
-            })
-            ->with([
-                'logs' => function ($q) use ($today) {
+            $medications = Medication::where('user_id', $user->id)
+                ->where(function ($query) use ($today) {
+                    $query->whereDate('created_at', $today)
+                        ->orWhere('is_everyday', true);
+                })
+                ->with(['logs' => function ($q) use ($today) {
                     $q->whereDate('date', $today);
-                }
-            ])
-            ->get()
-            ->map(function ($med) {
+                }])
+                ->get();
+
+            $data = $medications->map(function ($med) use ($today, $now) {
                 $log = $med->logs->first();
+                $status = $log ? $log->status : 'pending';
+
+                $medTime = \Carbon\Carbon::parse($med->reminder_time, 'Asia/Makassar');
+
+                if ($status === 'pending' && $now->greaterThan($medTime)) {
+                    try {
+                        MedicationLog::updateOrCreate(
+                            ['medication_id' => $med->id, 'date' => $today],
+                            ['status' => 'missed']
+                        );
+                        $status = 'missed';
+                    } catch (\Exception $e) {
+                        $status = 'missed';
+                    }
+                }
+
                 return [
                     'id' => $med->id,
                     'name' => $med->name,
-                    'time' => \Carbon\Carbon::parse($med->reminder_time)->format('H:i'),
+                    'time' => $medTime->format('H:i'),
                     'is_everyday' => $med->is_everyday,
-                    'status' => $log ? $log->status : 'pending',
+                    'status' => $status,
                 ];
-            });
+            })
+                ->filter(function ($item) {
+                    return $item['status'] !== 'missed';
+                })
+                ->values();
 
-        return response()->json(['success' => true, 'data' => $medications]);
+            return response()->json(['success' => true, 'data' => $data]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 
     public function store(Request $request)

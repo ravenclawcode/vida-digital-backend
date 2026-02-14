@@ -8,6 +8,7 @@ use App\Models\SoapNote;
 use App\Models\MedicationLog;
 use App\Models\MoodLog;
 use App\Models\PhqResult;
+use App\Models\PrivateMessage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -26,7 +27,6 @@ class CounselorController extends Controller
             'data' => $counselors
         ]);
     }
-
     public function getPatients(Request $request): JsonResponse
     {
         Carbon::setLocale('id');
@@ -36,11 +36,28 @@ class CounselorController extends Controller
             ->get()
             ->map(fn(User $patient) => $this->mapPatientList($patient, $counselorId));
 
-
         return response()->json([
             'success' => true,
             'data' => $patients
         ]);
+    }
+    public function show($id): JsonResponse
+    {
+        try {
+            $patient = User::where('id', $id)
+                ->where('role_id', 3)
+                ->firstOrFail();
+
+            return response()->json([
+                'success' => true,
+                'data' => $this->buildPatientDetail($patient)
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pasien tidak ditemukan atau terjadi kesalahan server.'
+            ], 404);
+        }
     }
 
     public function storeSoap(Request $request): JsonResponse
@@ -54,7 +71,7 @@ class CounselorController extends Controller
         ]);
 
         SoapNote::create([
-            'counselor_id' => $request->user()->id,
+            'counselor_id' => Auth::id(),
             'patient_id' => $request->patient_id,
             'subjective' => $request->subjective,
             'objective' => $request->objective,
@@ -67,66 +84,55 @@ class CounselorController extends Controller
             'message' => 'SOAP disimpan'
         ], 201);
     }
-
-    public function show(int $id): JsonResponse
+    private function mapPatientList(User $patient, $counselorId): array
     {
-        $patient = $this->getPatient($id);
+        $progress = $this->calculateProgress($patient);
 
-        return response()->json([
-            'success' => true,
-            'data' => $this->buildPatientDetail($patient)
-        ]);
+        return [
+            'id' => $patient->id,
+            'name' => $patient->username,
+            'profile_photo_url' => $patient->profile_photo_url,
+            'status' => $this->determineStatusWithProgress($patient, $progress),
+            'progress' => (float) $progress,
+            'unread' => $this->getUnreadCount($patient, $counselorId),
+            'is_online' => (bool) $patient->is_online,
+            'last_seen_display' => $this->getLastSeenText($patient),
+        ];
     }
-
-    private function getPatient(int $id): User
-    {
-        return User::where('id', $id)
-            ->where('role_id', 3)
-            ->firstOrFail();
-    }
-
     private function buildPatientDetail(User $patient): array
     {
         Carbon::setLocale('id');
 
         $phqHistory = $this->getPhqHistory($patient);
         $latestPhq  = $phqHistory->first();
+        $progress   = $this->calculateProgress($patient);
+
+        $startOfWeek = now()->startOfWeek();
+        $endOfWeek = now()->endOfWeek();
+        $moodWeekRange = $startOfWeek->translatedFormat('d') . '-' . $endOfWeek->translatedFormat('d M');
 
         return [
             'id' => $patient->id,
             'name' => $patient->username,
+            'profile_photo_url' => $patient->profile_photo_url,
             'is_online' => (bool) $patient->is_online,
             'last_seen_display' => $this->getLastSeenText($patient),
-
-            'progress' => $this->calculateProgress($patient),
-            'status' => $this->determineStatus($patient),
+            'progress' => (float) $progress,
+            'status' => $this->determineStatusWithProgress($patient, $progress),
             'medication_logs' => $this->getMedicationLogs($patient),
             'weekly_moods' => $this->getWeeklyMoods($patient),
-
+            'mood_week_range' => $moodWeekRange,
             'last_phq_score' => $latestPhq['score'] ?? 0,
             'last_phq_date' => $latestPhq['date'] ?? '-',
             'phq_history' => $phqHistory,
         ];
     }
 
-    private function mapPatientList(User $patient, int $counselorId): array
+    private function getUnreadCount(User $patient, $counselorId): int
     {
-        return [
-            'id' => $patient->id,
-            'name' => $patient->username,
-            'status' => $this->determineStatus($patient),
-            'progress' => $this->calculateProgress($patient),
-            'unread' => $this->getUnreadCount($patient, $counselorId),
-            'is_online' => (bool) $patient->is_online,
-            'last_seen_display' => $patient->is_online
-                ? 'Online'
-                : ($patient->last_seen ? $patient->last_seen->diffForHumans() : 'Offline'),
-        ];
-    }
+        if (!$counselorId) return 0;
 
-    private function getUnreadCount(User $patient, int $counselorId): int
-    {
-        return \App\Models\PrivateMessage::where('sender_id', $patient->id)
+        return PrivateMessage::where('sender_id', $patient->id)
             ->where('receiver_id', $counselorId)
             ->where('is_read', false)
             ->count();
@@ -134,18 +140,18 @@ class CounselorController extends Controller
 
     private function getMedicationLogs(User $patient)
     {
-        return MedicationLog::whereHas(
-            'medication',
-            fn($q) =>
-            $q->where('user_id', $patient->id)
-        )
+        Carbon::setLocale('id');
+
+        return MedicationLog::with('medication')
+            ->whereHas('medication', fn($q) => $q->where('user_id', $patient->id))
             ->where('date', '>=', now()->subDays(7))
             ->orderBy('date', 'desc')
             ->get()
             ->map(fn($log) => [
-                'medication_name' => $log->medication->name,
+                'medication_name' => $log->medication->name ?? 'Obat Terhapus',
                 'is_taken' => $log->status === 'taken' ? 1 : 0,
-                'date' => $log->date
+                'day_name' => Carbon::parse($log->date)->translatedFormat('l'),
+                'date_formatted' => Carbon::parse($log->date)->format('d M'),
             ]);
     }
 
@@ -167,7 +173,6 @@ class CounselorController extends Controller
 
         return $weeklyMoods;
     }
-
     private function getPhqHistory(User $patient)
     {
         return PhqResult::where('user_id', $patient->id)
@@ -182,49 +187,53 @@ class CounselorController extends Controller
 
     private function getLastSeenText(User $patient): string
     {
-        if ($patient->is_online) {
-            return 'Online';
-        }
+        $isRecentlyActive = $patient->is_online &&
+            $patient->last_seen &&
+            $patient->last_seen->diffInMinutes(now()) < 5;
 
-        return $patient->last_seen
-            ? $patient->last_seen->diffForHumans()
-            : $patient->updated_at->diffForHumans();
+        if ($isRecentlyActive) return 'Online';
+
+        return $patient->last_seen ? $patient->last_seen->diffForHumans() : 'Offline';
     }
 
     private function calculateProgress(User $patient): float
     {
-        $totalLogs = MedicationLog::whereHas(
-            'medication',
-            fn($q) =>
-            $q->where('user_id', $patient->id)
-        )
-            ->where('date', '>=', now()->subDays(7))
-            ->count();
+        $query = MedicationLog::whereHas('medication', fn($q) => $q->where('user_id', $patient->id))
+            ->where('date', '>=', now()->subDays(7));
 
-        $takenLogs = MedicationLog::whereHas(
-            'medication',
-            fn($q) =>
-            $q->where('user_id', $patient->id)
-        )
-            ->where('date', '>=', now()->subDays(7))
-            ->where('status', 'taken')
-            ->count();
+        $totalLogs = (clone $query)->count();
 
-        return $totalLogs > 0 ? ($takenLogs / $totalLogs) : 0;
+        if ($totalLogs === 0) return -1.0;
+
+        $takenLogs = $query->where('status', 'taken')->count();
+
+        return (float) ($takenLogs / $totalLogs);
     }
 
-    private function determineStatus(User $patient): string
+    private function determineStatusWithProgress(User $patient, float $progress): string
     {
-        $progress = $this->calculateProgress($patient);
+        if ($progress === -1.0) {
+            return 'Belum Ada Data';
+        }
 
         $latestPhq = PhqResult::where('user_id', $patient->id)
             ->orderBy('created_at', 'desc')
             ->first();
 
-        if ($latestPhq && $latestPhq->total_score >= 15) return 'Kritis';
-        if ($progress > 0.8) return 'Sangat Baik';
-        if ($progress > 0.5) return 'Baik';
+        if ($latestPhq && $latestPhq->total_score >= 15) {
+            return 'Kritis';
+        }
 
-        return 'Perlu Perhatian';
+        $percentage = $progress * 100;
+
+        if ($percentage >= 80) {
+            return 'Sangat Baik';
+        } elseif ($percentage >= 60) {
+            return 'Baik';
+        } elseif ($percentage >= 40) {
+            return 'Perlu Perhatian';
+        } else {
+            return 'Kritis';
+        }
     }
 }

@@ -47,6 +47,7 @@ class PrivateChatController extends Controller
             return [
                 'id' => (string) $contact->id,
                 'username' => $contact->username,
+                'profile_photo_url' => $contact->profile_photo_url,
                 'last_message' => $lastMsg ? $lastMsg->message : 'Ketuk untuk memulai...',
                 'last_message_time' => $lastMsg ? $lastMsg->created_at->format('H:i') : '',
                 'unread_count' => (int) $unreadCount,
@@ -108,5 +109,26 @@ class PrivateChatController extends Controller
         })->delete();
 
         return response()->json(['message' => 'Chat deleted']);
+    }
+
+    public function deleteSingleMessage(Request $request, $id)
+    {
+        $message = PrivateMessage::findOrFail($id);
+        $userId = Auth::id();
+        $type = $request->input('type');
+
+        if ($type === 'everyone') {
+            if ($message->sender_id === $userId) {
+                $message->update(['is_deleted_everyone' => true]);
+            }
+        } else {
+            if ($message->sender_id === $userId) {
+                $message->update(['deleted_by_sender' => true]);
+            } else {
+                $message->update(['deleted_by_receiver' => true]);
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => 'Berhasil dihapus']);
     }
 }

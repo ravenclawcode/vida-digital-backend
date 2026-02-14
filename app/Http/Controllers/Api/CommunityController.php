@@ -37,7 +37,10 @@ class CommunityController extends Controller
         try {
             $userId = Auth::id();
 
-            $posts = CommunityPost::with(['user:id,username', 'comments.user:id,username'])
+            $posts = CommunityPost::with([
+                'user:id,username,profile_photo',
+                'comments.user:id,username,profile_photo'
+            ])
                 ->withCount(['likes', 'comments'])
                 ->withExists(['likes as is_liked' => fn($q) => $q->where('user_id', $userId)])
                 ->latest()
@@ -51,12 +54,20 @@ class CommunityController extends Controller
                     ? ($post->user->username ?? 'User')
                     : 'Anonim';
 
+                $post->author_photo = $post->is_mine
+                    ? ($post->user->profile_photo ?? null)
+                    : null;
+
                 $post->comments->each(function ($comment) use ($userId) {
                     $comment->is_mine = $comment->user_id === $userId;
                     $comment->time_ago = $comment->created_at->diffForHumans();
                     $comment->author_name = $comment->is_mine
                         ? ($comment->user->username ?? 'User')
                         : 'Anonim';
+
+                    $comment->author_photo = $comment->is_mine
+                        ? ($comment->user->profile_photo ?? null)
+                        : null;
                 });
 
                 return $post;
@@ -64,13 +75,9 @@ class CommunityController extends Controller
 
             return response()->json($posts);
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Gagal memuat data: ' . $e->getMessage()
-            ], 500);
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
-
     public function store(Request $request)
     {
         $validated = $request->validate([

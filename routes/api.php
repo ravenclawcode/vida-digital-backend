@@ -54,10 +54,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/chat/messages/{receiver_id}', [PrivateChatController::class, 'getMessages']);
     Route::post('/chat/send', [PrivateChatController::class, 'sendMessage']);
     Route::delete('/chat/messages/{other_user_id}', [PrivateChatController::class, 'destroyMessages']);
-    Route::get('/counselor/patients', [CounselorController::class, 'getPatients']);
     Route::get('/counselor/patients/{id}', [CounselorController::class, 'show']);
     Route::post('/phq-results', [PhqResultController::class, 'store']);
     Route::post('/user/status', [AuthController::class, 'updateStatus']);
+    Route::post('/chat/messages/{id}/delete', [PrivateChatController::class, 'deleteSingleMessage']);
 });
 
 Route::post('/validate-token', [AuthController::class, 'checkToken']);

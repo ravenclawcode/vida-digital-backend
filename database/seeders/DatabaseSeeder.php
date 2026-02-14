@@ -23,10 +23,5 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('admin123'),
             'role_id' => 1,
         ]);
-
-        $this->call([
-            MoodLogSeeder::class,
-        ]);
     }
 }
-

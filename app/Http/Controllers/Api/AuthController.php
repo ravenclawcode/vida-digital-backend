@@ -9,10 +9,10 @@ use App\Models\RegistrationToken;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-
     public function checkToken(Request $request)
     {
         $request->validate(['token_code' => 'required|string']);
@@ -100,29 +100,25 @@ class AuthController extends Controller
             'username' => 'required|string|max:255|unique:users,username,' . $user->id,
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'gender' => 'nullable|string',
-            'profile_photo' => 'nullable|string',
+            'profile_photo' => 'nullable',
         ]);
 
-        $user->update([
-            'username' => $request->username,
-            'email' => $request->email,
-            'gender' => $request->gender,
-            'profile_photo' => $request->profile_photo,
-        ]);
+        $data = $request->only(['username', 'email', 'gender']);
 
-        if ($user->profile_photo && str_contains($user->profile_photo, 'assets/')) {
-            $user->profile_photo_url = $user->profile_photo;
-        } else if ($user->profile_photo) {
-            $user->profile_photo_url = asset('storage/' . $user->profile_photo);
-        } else {
-            $user->profile_photo_url = null;
+        if ($request->hasFile('profile_photo')) {
+            $file = $request->file('profile_photo');
+            $path = $file->store('profile-photos', 'public');
+            $data['profile_photo'] = $path;
+        } elseif ($request->filled('profile_photo')) {
+            $data['profile_photo'] = $request->profile_photo;
         }
+
+        $user->update($data);
 
         return response()->json([
             'success' => true,
-            'message' => 'Profile updated successfully',
-            'user' => $user
-        ], 200);
+            'user' => $user->fresh()
+        ]);
     }
 
     public function changePassword(Request $request)
@@ -224,10 +220,10 @@ class AuthController extends Controller
     {
         $request->validate(['is_online' => 'required|boolean']);
 
-        $user = $request->user();
+        $user = Auth::user();
         $user->update([
             'is_online' => $request->is_online,
-            'last_seen' => now()
+            'last_seen' => now(),
         ]);
 
         return response()->json(['success' => true]);

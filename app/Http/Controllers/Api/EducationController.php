@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\EducationContent;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 
 class EducationController extends Controller
 {
