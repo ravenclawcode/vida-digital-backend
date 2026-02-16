@@ -73,4 +73,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(PrivateMessage::class, 'receiver_id');
     }
+
+    public function getIsOnlineAttribute()
+    {
+        return $this->updated_at->gt(now()->subMinutes(1));
+    }
 }

@@ -72,6 +72,7 @@ class PrivateChatController extends Controller
                 'username' => $contact->username,
                 'profile_photo_url' => $contact->profile_photo_url,
                 'last_message' => $displayMessage,
+                'last_message_at' => $lastMsg ? $lastMsg->created_at->toIso8601String() : $contact->updated_at->toIso8601String(),
                 'last_message_time' => $lastMsg ? $lastMsg->created_at->format('H:i') : '',
                 'unread_count' => (int) $unreadCount,
                 'is_online' => (bool) $contact->is_online,
@@ -140,6 +141,7 @@ class PrivateChatController extends Controller
         })->orWhere(function ($q) use ($userId, $other_user_id) {
             $q->where('sender_id', $other_user_id)->where('receiver_id', $userId);
         })->chunk(100, function ($messages) use ($userId) {
+            /** @var PrivateMessage $message */
             foreach ($messages as $message) {
                 if ((string)$message->sender_id === $userId) {
                     $message->deleted_by_sender = true;
@@ -156,6 +158,7 @@ class PrivateChatController extends Controller
 
     public function deleteSingleMessage(Request $request, $id)
     {
+        /** @var PrivateMessage $message */
         $message = PrivateMessage::where('id', $id)->first();
 
         if (!$message) {
