@@ -73,6 +73,16 @@ class MedicationController extends Controller
             'is_everyday' => 'required|boolean'
         ]);
 
+        $now = now()->timezone('Asia/Makassar');
+        $inputTime = \Carbon\Carbon::createFromFormat('H:i', $request->time, 'Asia/Makassar');
+
+        if ($inputTime->lessThan($now)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Waktu sudah terlewat. Silahkan pilih waktu yang akan datang.'
+            ], 422);
+        }
+
         $medication = Medication::create([
             'user_id' => $request->user()->id,
             'name' => $request->name,

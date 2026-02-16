@@ -13,7 +13,6 @@ class PrivateChatController extends Controller
     public function getContacts()
     {
         $user = Auth::user();
-
         \Carbon\Carbon::setLocale('id');
 
         if ($user->role_id == 3) {
@@ -27,15 +26,39 @@ class PrivateChatController extends Controller
         }
 
         return response()->json($contacts->map(function ($contact) use ($user) {
+
             $lastMsg = PrivateMessage::where(function ($q) use ($user, $contact) {
-                $q->where('sender_id', $user->id)->where('receiver_id', $contact->id);
-            })->orWhere(function ($q) use ($user, $contact) {
-                $q->where('sender_id', $contact->id)->where('receiver_id', $user->id);
-            })->orderBy('created_at', 'desc')->first();
+                $q->where(function ($inner) use ($user, $contact) {
+                    $inner->where('sender_id', $user->id)->where('receiver_id', $contact->id);
+                })->orWhere(function ($inner) use ($user, $contact) {
+                    $inner->where('sender_id', $contact->id)->where('receiver_id', $user->id);
+                });
+            })
+                ->where(function ($q) use ($user) {
+                    $q->where(function ($sub) use ($user) {
+                        $sub->where('sender_id', $user->id)->where('deleted_by_sender', false);
+                    })->orWhere(function ($sub) use ($user) {
+                        $sub->where('receiver_id', $user->id)->where('deleted_by_receiver', false);
+                    });
+                })
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+            $displayMessage = 'Ketuk untuk memulai...';
+            if ($lastMsg) {
+                if ($lastMsg->is_deleted_everyone) {
+                    $displayMessage = ($lastMsg->sender_id == $user->id)
+                        ? 'Anda menghapus pesan ini'
+                        : 'Pesan ini telah dihapus';
+                } else {
+                    $displayMessage = $lastMsg->message;
+                }
+            }
 
             $unreadCount = PrivateMessage::where('sender_id', $contact->id)
                 ->where('receiver_id', $user->id)
                 ->where('is_read', false)
+                ->where('deleted_by_receiver', false)
                 ->count();
 
             $statusText = $contact->is_online
@@ -48,7 +71,7 @@ class PrivateChatController extends Controller
                 'id' => (string) $contact->id,
                 'username' => $contact->username,
                 'profile_photo_url' => $contact->profile_photo_url,
-                'last_message' => $lastMsg ? $lastMsg->message : 'Ketuk untuk memulai...',
+                'last_message' => $displayMessage,
                 'last_message_time' => $lastMsg ? $lastMsg->created_at->format('H:i') : '',
                 'unread_count' => (int) $unreadCount,
                 'is_online' => (bool) $contact->is_online,
@@ -83,50 +106,77 @@ class PrivateChatController extends Controller
 
     public function getMessages($receiver_id)
     {
-        $user_id = Auth::id();
+        $user_id = (string) Auth::id();
 
         PrivateMessage::where('sender_id', $receiver_id)
             ->where('receiver_id', $user_id)
+            ->where('is_read', false)
             ->update(['is_read' => true]);
 
-        $messages = PrivateMessage::where(function ($q) use ($user_id, $receiver_id) {
-            $q->where('sender_id', $user_id)->where('receiver_id', $receiver_id);
-        })->orWhere(function ($q) use ($user_id, $receiver_id) {
-            $q->where('sender_id', $receiver_id)->where('receiver_id', $user_id);
-        })->orderBy('created_at', 'asc')->get();
-
-        return response()->json($messages);
+        return PrivateMessage::where(function ($q) use ($user_id, $receiver_id) {
+            $q->where(function ($inner) use ($user_id, $receiver_id) {
+                $inner->where('sender_id', $user_id)->where('receiver_id', $receiver_id);
+            })->orWhere(function ($inner) use ($user_id, $receiver_id) {
+                $inner->where('sender_id', $receiver_id)->where('receiver_id', $user_id);
+            });
+        })
+            ->where(function ($q) use ($user_id) {
+                $q->where(function ($sub) use ($user_id) {
+                    $sub->where('sender_id', $user_id)->where('deleted_by_sender', false);
+                })->orWhere(function ($sub) use ($user_id) {
+                    $sub->where('receiver_id', $user_id)->where('deleted_by_receiver', false);
+                });
+            })
+            ->orderBy('created_at', 'asc')
+            ->get();
     }
 
     public function destroyMessages($other_user_id)
     {
-        $user_id = Auth::id();
+        $userId = (string) Auth::id();
 
-        PrivateMessage::where(function ($q) use ($user_id, $other_user_id) {
-            $q->where('sender_id', $user_id)->where('receiver_id', $other_user_id);
-        })->orWhere(function ($q) use ($user_id, $other_user_id) {
-            $q->where('sender_id', $other_user_id)->where('receiver_id', $user_id);
-        })->delete();
+        PrivateMessage::where(function ($q) use ($userId, $other_user_id) {
+            $q->where('sender_id', $userId)->where('receiver_id', $other_user_id);
+        })->orWhere(function ($q) use ($userId, $other_user_id) {
+            $q->where('sender_id', $other_user_id)->where('receiver_id', $userId);
+        })->chunk(100, function ($messages) use ($userId) {
+            foreach ($messages as $message) {
+                if ((string)$message->sender_id === $userId) {
+                    $message->deleted_by_sender = true;
+                }
+                if ((string)$message->receiver_id === $userId) {
+                    $message->deleted_by_receiver = true;
+                }
+                $message->save();
+            }
+        });
 
-        return response()->json(['message' => 'Chat deleted']);
+        return response()->json(['success' => true, 'message' => 'Riwayat chat berhasil dibersihkan untuk Anda']);
     }
 
     public function deleteSingleMessage(Request $request, $id)
     {
-        $message = PrivateMessage::findOrFail($id);
-        $userId = Auth::id();
+        $message = PrivateMessage::where('id', $id)->first();
+
+        if (!$message) {
+            return response()->json(['success' => false, 'message' => 'Pesan tidak ditemukan'], 404);
+        }
+
+        $userId = (string) Auth::id();
         $type = $request->input('type');
 
         if ($type === 'everyone') {
-            if ($message->sender_id === $userId) {
-                $message->update(['is_deleted_everyone' => true]);
+            if ((string)$message->sender_id === $userId) {
+                $message->is_deleted_everyone = true;
+                $message->save();
             }
         } else {
-            if ($message->sender_id === $userId) {
-                $message->update(['deleted_by_sender' => true]);
-            } else {
-                $message->update(['deleted_by_receiver' => true]);
+            if ((string)$message->sender_id === $userId) {
+                $message->deleted_by_sender = true;
+            } elseif ((string)$message->receiver_id === $userId) {
+                $message->deleted_by_receiver = true;
             }
+            $message->save();
         }
 
         return response()->json(['success' => true, 'message' => 'Berhasil dihapus']);
