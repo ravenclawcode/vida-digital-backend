@@ -4,7 +4,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                 <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h3 class="text-lg font-medium text-gray-900">Manajemen Soal PHQ-9</h3>
+                        <h3 class="text-lg font-medium text-gray-900">Instrumen PHQ-9</h3>
                         <p class="text-sm text-gray-500">Kelola daftar pertanyaan dan opsi jawaban untuk skrining depresi.</p>
                     </div>
                     <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'tambah-soal')" class="bg-[#D83A64]">

@@ -16,7 +16,7 @@
 
                 <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h3 class="text-lg font-medium text-gray-900">Kontrol Token Registrasi</h3>
+                        <h3 class="text-lg font-medium text-gray-900">Token Registrasi</h3>
                         <p class="text-sm text-gray-500">Buat kode unik untuk pasien baru agar mereka dapat mendaftar.
                         </p>
                     </div>

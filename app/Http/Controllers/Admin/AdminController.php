@@ -7,7 +7,7 @@ use App\Models\MoodLog;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
-class DashboardController extends Controller
+class AdminController extends Controller
 {
     public function index()
     {
@@ -20,6 +20,6 @@ class DashboardController extends Controller
             ->groupBy('mood_code')
             ->get();
 
-        return view('dashboard', compact('moodStats', 'totalMoods'));
+        return view('admin.dashboard.index', compact('moodStats', 'totalMoods'));
     }
 }

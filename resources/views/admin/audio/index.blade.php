@@ -16,7 +16,7 @@
 
                 <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h3 class="text-lg font-medium text-gray-900">Pustaka Audio Mindfulness</h3>
+                        <h3 class="text-lg font-medium text-gray-900">Daftar Audio</h3>
                         <p class="text-sm text-gray-500">Kelola konten audio relaksasi dan meditasi untuk pengguna.</p>
                     </div>
 

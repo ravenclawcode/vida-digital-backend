@@ -11,17 +11,27 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('roles')->insert([
+        $roles = [
             ['id' => 1, 'role_name' => 'Admin'],
             ['id' => 2, 'role_name' => 'Counselor'],
             ['id' => 3, 'role_name' => 'User'],
-        ]);
+            ['id' => 4, 'role_name' => 'Supervisor'],
+        ];
 
-        User::create([
-            'username' => 'superadmin',
-            'email' => 'admin@vida.com',
-            'password' => Hash::make('admin123'),
-            'role_id' => 1,
-        ]);
+        foreach ($roles as $role) {
+            DB::table('roles')->updateOrInsert(
+                ['id' => $role['id']],
+                ['role_name' => $role['role_name']]
+            );
+        }
+
+        User::firstOrCreate(
+            ['email' => 'superadmin@vida.com'],
+            [
+                'username' => 'superadmin',
+                'password' => Hash::make('superadmin123'),
+                'role_id' => 1,
+            ]
+        );
     }
 }
