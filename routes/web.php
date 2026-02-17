@@ -5,17 +5,19 @@ use App\Http\Controllers\Admin\CounselorController;
 use App\Http\Controllers\Admin\TokenController;
 use App\Http\Controllers\Admin\MindfulnessAudioController;
 use App\Http\Controllers\Admin\EducationController;
-use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\PhqQuestionController;
 use App\Http\Controllers\Admin\SupervisorManagementController;
-use App\Http\Controllers\Supervisor\SupervisorController;
+use App\Http\Controllers\Supervisor\SupervisorDashboardController;
+use App\Http\Controllers\Supervisor\SupervisorChatController;
+use App\Http\Controllers\Supervisor\SupervisorSoapController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::get('/dashboard', [AdminController::class, 'index'])
+Route::get('/dashboard', [AdminDashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
@@ -41,9 +43,10 @@ Route::middleware(['auth', 'role:1'])->group(function () {
 });
 
 Route::middleware(['auth', 'role:4'])->prefix('supervisor')->name('supervisor.')->group(function () {
-    Route::get('/dashboard', [SupervisorController::class, 'dashboard'])->name('dashboard');
-    Route::get('/monitoring-chat', [SupervisorController::class, 'monitoringChat'])->name('monitoring-chat');
-    Route::get('/catatan-soap', [SupervisorController::class, 'catatanSoap'])->name('catatan-soap');
+    Route::get('/dashboard', [SupervisorDashboardController::class, 'dashboard'])->name('dashboard');
+    Route::get('/monitoring-chat', [SupervisorChatController::class, 'index'])->name('monitoring-chat');
+    Route::get('/catatan-soap', [SupervisorSoapController::class, 'index'])->name('catatan-soap');
+    Route::delete('/soap/{id}', [SupervisorSoapController::class, 'destroy'])->name('soap.destroy');
 });
 
 require __DIR__ . '/auth.php';

@@ -81,6 +81,7 @@
         </div>
     </div>
 
+    {{-- Modal Tambah --}}
     <x-modal name="tambah-konselor" :show="$errors->any()" focusable>
         <form action="{{ route('counselors.store') }}" method="POST" class="p-6">
             @csrf

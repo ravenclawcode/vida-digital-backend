@@ -7,7 +7,7 @@ use App\Models\MoodLog;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
-class AdminController extends Controller
+class AdminDashboardController extends Controller
 {
     public function index()
     {

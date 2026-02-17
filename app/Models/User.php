@@ -78,4 +78,9 @@ class User extends Authenticatable
     {
         return $this->updated_at->gt(now()->subMinutes(1));
     }
+
+    public function messagesAsSenderOrReceiver()
+    {
+        return $this->hasMany(PrivateMessage::class, 'sender_id')->orWhere('receiver_id', $this->id);
+    }
 }

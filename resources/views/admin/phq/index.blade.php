@@ -1,24 +1,35 @@
 <x-app-layout>
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+
+            @if (session('success'))
+            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
+                x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-y-5 opacity-0"
+                x-transition:enter-end="translate-y-0 opacity-100" x-transition:leave="transition ease-in duration-300"
+                x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                class="fixed bottom-8 right-8 z-50 px-6 py-3 bg-white text-gray-700 text-sm rounded-lg shadow-xl border-l-4 border-green-500 font-medium ring-1 ring-black ring-opacity-5">
+                {{ session('success') }}
+            </div>
+            @endif
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                 <div class="flex justify-between items-center mb-6">
                     <div>
                         <h3 class="text-lg font-medium text-gray-900">Instrumen PHQ-9</h3>
                         <p class="text-sm text-gray-500">Kelola daftar pertanyaan dan opsi jawaban untuk skrining depresi.</p>
                     </div>
-                    <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'tambah-soal')" class="bg-[#D83A64]">
+                    <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'tambah-soal')" class="bg-[#D83A64] hover:bg-pink-700 uppercase">
                         Tambah Soal
                     </x-primary-button>
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
+                    <table class="w-full text-left border-collapse border border-gray-100">
                         <thead>
-                            <tr class="bg-gray-50 text-xs uppercase">
-                                <th class="p-4 border-b w-16 text-gray-700 text-center font-bold">No</th>
-                                <th class="p-4 border-b text-gray-700 font-bold">Pertanyaan & Opsi Jawaban</th>
-                                <th class="p-4 border-b text-center text-gray-700 font-bold">Aksi</th>
+                            <tr class="bg-gray-50 text-xs uppercase text-gray-700">
+                                <th class="p-4 border-b w-16 text-center font-bold">No</th>
+                                <th class="p-4 border-b font-bold">Pertanyaan & Opsi Jawaban</th>
+                                <th class="p-4 border-b text-center font-bold">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
@@ -49,7 +60,7 @@
                                     <form action="{{ route('phq-questions.destroy', $q->id) }}" method="POST" onsubmit="return confirm('Hapus pertanyaan ini?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-red-400 hover:text-red-600 transition duration-150 p-2 hover:bg-red-50 rounded-full">
+                                        <button type="submit" class="text-red-500 hover:text-red-700 transition duration-150 p-2 hover:bg-red-50 rounded-full">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
@@ -59,7 +70,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="3" class="p-10 text-center text-gray-400">
+                                <td colspan="3" class="p-10 text-center text-gray-400 italic text-sm">
                                     Belum ada soal yang ditambahkan.
                                 </td>
                             </tr>
@@ -75,7 +86,7 @@
         <form action="{{ route('phq-questions.store') }}" method="POST" class="p-6 text-gray-900">
             @csrf
             <h2 class="text-lg font-medium">Tambah Pertanyaan PHQ-9</h2>
-            <p class="mt-1 text-sm text-gray-600">Isi pertanyaan dan tentukan jawaban untuk skor 0-3.</p>
+            <p class="mt-1 text-sm text-gray-600 italic">Isi pertanyaan dan tentukan jawaban untuk skor 0-3.</p>
 
             <div class="mt-6 space-y-5">
                 <div>
@@ -113,7 +124,7 @@
                     {{ __('Batal') }}
                 </x-secondary-button>
 
-                <x-primary-button class="ms-3 bg-[#D83A64] hover:bg-pink-700">
+                <x-primary-button class="ms-3 bg-[#D83A64] hover:bg-pink-700 uppercase">
                     {{ __('Simpan Soal') }}
                 </x-primary-button>
             </div>
