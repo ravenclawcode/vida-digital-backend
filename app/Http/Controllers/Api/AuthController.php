@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
+use App\Mail\OtpMail;
 
 class AuthController extends Controller
 {
@@ -141,9 +142,13 @@ class AuthController extends Controller
 
     public function sendOtp(Request $request)
     {
+        $email = strtolower($request->email);
+
+        $request->merge(['email' => $email]);
+
         $request->validate(['email' => 'required|email|exists:users,email']);
 
-        $otp = rand(10000, 99999);
+        $otp = random_int(10000, 99999);
         $user = User::where('email', $request->email)->first();
 
         $user->update([
@@ -151,11 +156,12 @@ class AuthController extends Controller
             'otp_expires_at' => now()->addMinutes(10)
         ]);
 
-        Mail::raw("Kode OTP Vida Anda adalah: $otp", function ($message) use ($user) {
-            $message->to($user->email)->subject('Kode Reset Password Vida');
-        });
+        Mail::to($user->email)->send(new OtpMail($otp, $user->username));
 
-        return response()->json(['success' => true, 'message' => 'OTP telah dikirim ke email Anda.']);
+        return response()->json([
+            'success' => true,
+            'message' => 'OTP telah dikirim ke email Gmail Anda.'
+        ]);
     }
 
     public function verifyOtp(Request $request)

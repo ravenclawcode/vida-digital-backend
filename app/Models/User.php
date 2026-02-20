@@ -46,6 +46,21 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    public function setUsernameAttribute($value)
+    {
+        $this->attributes['username'] = strtolower($value);
+    }
+
+    public function setEmailAttribute($value)
+    {
+        $this->attributes['email'] = strtolower($value);
+    }
+
+    public function getUsernameAttribute($value)
+    {
+        return ucwords($value);
+    }
+
     protected function casts(): array
     {
         return [
