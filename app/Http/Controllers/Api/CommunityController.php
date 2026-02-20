@@ -10,6 +10,7 @@ use App\Models\UserActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\CommunityPostResource;
 
 class CommunityController extends Controller
 {
@@ -42,42 +43,18 @@ class CommunityController extends Controller
                 'comments.user:id,username,profile_photo'
             ])
                 ->withCount(['likes', 'comments'])
-                ->withExists(['likes as is_liked' => fn($q) => $q->where('user_id', $userId)])
+                ->withExists(['likes as is_liked' => function ($q) use ($userId) {
+                    $q->where('user_id', $userId);
+                }])
                 ->latest()
                 ->paginate(10);
 
-            $posts->getCollection()->transform(function ($post) use ($userId) {
-                $post->is_mine = $post->user_id === $userId;
-                $post->time_ago = $post->created_at->diffForHumans();
-
-                $post->author_name = $post->is_mine
-                    ? ($post->user->username ?? 'User')
-                    : 'Anonim';
-
-                $post->author_photo = $post->is_mine
-                    ? ($post->user->profile_photo ?? null)
-                    : null;
-
-                $post->comments->each(function ($comment) use ($userId) {
-                    $comment->is_mine = $comment->user_id === $userId;
-                    $comment->time_ago = $comment->created_at->diffForHumans();
-                    $comment->author_name = $comment->is_mine
-                        ? ($comment->user->username ?? 'User')
-                        : 'Anonim';
-
-                    $comment->author_photo = $comment->is_mine
-                        ? ($comment->user->profile_photo ?? null)
-                        : null;
-                });
-
-                return $post;
-            });
-
-            return response()->json($posts);
+            return CommunityPostResource::collection($posts);
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -167,12 +144,13 @@ class CommunityController extends Controller
     public function destroy($id)
     {
         $post = CommunityPost::findOrFail($id);
+        $user = Auth::user();
 
-        if ($post->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($post->user_id !== $user->id && $user->role_id != 2) {
+            return response()->json(['message' => 'Unauthorized. Hanya konselor yang bisa menghapus postingan orang lain.'], 403);
         }
 
         $post->delete();
-        return response()->json(['status' => 'success', 'message' => 'Postingan dihapus']);
+        return response()->json(['status' => 'success', 'message' => 'Postingan berhasil dihapus']);
     }
 }
