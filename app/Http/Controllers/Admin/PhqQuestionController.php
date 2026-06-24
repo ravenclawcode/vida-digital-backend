@@ -22,6 +22,7 @@ class PhqQuestionController extends Controller
             'option_1' => 'required|string',
             'option_2' => 'required|string',
             'option_3' => 'required|string',
+            'option_4' => 'required|string',
         ]);
 
         $options = [
@@ -29,6 +30,7 @@ class PhqQuestionController extends Controller
             ['score' => 1, 'text' => $request->option_1],
             ['score' => 2, 'text' => $request->option_2],
             ['score' => 3, 'text' => $request->option_3],
+            ['score' => 4, 'text' => $request->option_3],
         ];
 
         PhqQuestion::create([
@@ -50,6 +52,7 @@ class PhqQuestionController extends Controller
                 ['score' => 1, 'text' => $request->option_1],
                 ['score' => 2, 'text' => $request->option_2],
                 ['score' => 3, 'text' => $request->option_3],
+                ['score' => 4, 'text' => $request->option_3],
             ]
         ]);
 

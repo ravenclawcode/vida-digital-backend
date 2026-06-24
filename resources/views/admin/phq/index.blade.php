@@ -101,19 +101,23 @@
                     <div class="space-y-3">
                         <div class="flex items-center gap-4">
                             <span class="w-12 text-left font-bold text-xs text-gray-500">Skor 0</span>
-                            <x-text-input name="option_0" type="text" class="block w-full text-sm" value="Tidak sama sekali" required />
+                            <x-text-input name="option_0" type="text" class="block w-full text-sm" value="Tidak pernah" required />
                         </div>
                         <div class="flex items-center gap-4">
                             <span class="w-12 text-left font-bold text-xs text-gray-500">Skor 1</span>
-                            <x-text-input name="option_1" type="text" class="block w-full text-sm" value="Beberapa hari" required />
+                            <x-text-input name="option_1" type="text" class="block w-full text-sm" value="Beberapa hari ( 1–7 Hari )" required />
                         </div>
                         <div class="flex items-center gap-4">
                             <span class="w-12 text-left font-bold text-xs text-gray-500">Skor 2</span>
-                            <x-text-input name="option_2" type="text" class="block w-full text-sm" value="Lebih dari separuh hari" required />
+                            <x-text-input name="option_2" type="text" class="block w-full text-sm" value="Lebih dari 7 Hari" required />
                         </div>
                         <div class="flex items-center gap-4">
                             <span class="w-12 text-left font-bold text-xs text-gray-500">Skor 3</span>
-                            <x-text-input name="option_3" type="text" class="block w-full text-sm" value="Hampir setiap hari" required />
+                            <x-text-input name="option_3" type="text" class="block w-full text-sm" value="Hampir setiap Hari" required />
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="w-12 text-left font-bold text-xs text-gray-500">Skor 4</span>
+                            <x-text-input name="option_4" type="text" class="block w-full text-sm" value="Selalu" required />
                         </div>
                     </div>
                 </div>

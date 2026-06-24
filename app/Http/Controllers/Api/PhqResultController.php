@@ -39,10 +39,14 @@ class PhqResultController extends Controller
 
     private function getCategory($score)
     {
-        if ($score <= 4) return 'Minimal';
-        if ($score <= 9) return 'Ringan';
-        if ($score <= 14) return 'Sedang';
-        if ($score <= 19) return 'Cukup Berat';
-        return 'Berat';
+        if ($score >= 20) {
+            return 'Berat';
+        } elseif ($score >= 15) {
+            return 'Sedang Berat';
+        } elseif ($score >= 10) {
+            return 'Sedang';
+        } else {
+            return 'Ringan';
+        }
     }
 }
