@@ -89,6 +89,56 @@
                     </x-slot>
                 </x-dropdown>
             </div>
+
+            <!-- Hamburger (mobile only, tidak mengubah tampilan desktop) -->
+            <div class="flex items-center sm:hidden">
+                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
+                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Responsive Navigation Menu (mobile only) -->
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
+        <div class="pt-2 pb-3 space-y-1">
+            <x-responsive-nav-link :href="auth()->user()->role_id == 4 ? route('supervisor.dashboard') : route('dashboard')" :active="request()->routeIs('dashboard') || request()->routeIs('supervisor.dashboard')">
+                {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+
+            @if(auth()->user()->role_id == 1)
+            <div class="px-4 pt-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400">Manajemen Pengguna</div>
+            <x-responsive-nav-link :href="route('supervisor-management.index')" :active="request()->routeIs('supervisor-management.*')">Supervisor</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('counselors.index')" :active="request()->routeIs('counselors.*')">Konselor</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('tokens.index')" :active="request()->routeIs('tokens.*')">Token Registrasi User</x-responsive-nav-link>
+
+            <div class="px-4 pt-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400">Manajemen Konten</div>
+            <x-responsive-nav-link :href="route('audio.index')" :active="request()->routeIs('audio.*')">Audio</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('education.index')" :active="request()->routeIs('education.*')">Edukasi</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('phq-questions.index')" :active="request()->routeIs('phq-questions.*')">Instrumen PHQ-9</x-responsive-nav-link>
+            @endif
+
+            @if(auth()->user()->role_id == 4)
+            <x-responsive-nav-link :href="route('supervisor.monitoring-chat')" :active="request()->routeIs('supervisor.monitoring-chat')">Monitoring Chat</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('supervisor.catatan-soap')" :active="request()->routeIs('supervisor.catatan-soap')">Catatan SOAP</x-responsive-nav-link>
+            @endif
+        </div>
+
+        <div class="pt-4 pb-1 border-t border-gray-200">
+            <div class="px-4">
+                <div class="font-medium text-base text-gray-800">{{ Auth::user()->username }}</div>
+                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
+            </div>
+            <div class="mt-3 space-y-1">
+                <x-responsive-nav-link :href="route('profile.edit')">Profil Saya</x-responsive-nav-link>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <x-responsive-nav-link :href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();">Keluar</x-responsive-nav-link>
+                </form>
+            </div>
         </div>
     </div>
 </nav>

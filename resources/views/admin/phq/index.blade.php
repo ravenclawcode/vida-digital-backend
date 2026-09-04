@@ -1,30 +1,30 @@
 <x-app-layout>
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-6 sm:py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
             @if (session('success'))
             <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
                 x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-y-5 opacity-0"
                 x-transition:enter-end="translate-y-0 opacity-100" x-transition:leave="transition ease-in duration-300"
                 x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                class="fixed bottom-8 right-8 z-50 px-6 py-3 bg-white text-gray-700 text-sm rounded-lg shadow-xl border-l-4 border-green-500 font-medium ring-1 ring-black ring-opacity-5">
+                class="fixed bottom-4 right-4 left-4 sm:left-auto sm:bottom-8 sm:right-8 z-50 px-6 py-3 bg-white text-gray-700 text-sm rounded-lg shadow-xl border-l-4 border-green-500 font-medium ring-1 ring-black ring-opacity-5">
                 {{ session('success') }}
             </div>
             @endif
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <div class="flex justify-between items-center mb-6">
+            <div class="bg-white overflow-hidden shadow-sm rounded-lg sm:rounded-lg p-4 sm:p-6">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                     <div>
                         <h3 class="text-lg font-medium text-gray-900">Instrumen PHQ-9</h3>
                         <p class="text-sm text-gray-500">Kelola daftar pertanyaan dan opsi jawaban untuk skrining depresi.</p>
                     </div>
-                    <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'tambah-soal')" class="bg-[#D83A64] hover:bg-pink-700 uppercase">
+                    <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'tambah-soal')" class="bg-[#D83A64] hover:bg-pink-700 uppercase w-full sm:w-auto justify-center">
                         Tambah Soal
                     </x-primary-button>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse border border-gray-100">
+                <div class="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                    <table class="min-w-[560px] w-full text-left border-collapse border border-gray-100">
                         <thead>
                             <tr class="bg-gray-50 text-xs uppercase text-gray-700">
                                 <th class="p-4 border-b w-16 text-center font-bold">No</th>
@@ -83,7 +83,7 @@
     </div>
 
     <x-modal name="tambah-soal" :show="$errors->any()" focusable>
-        <form action="{{ route('phq-questions.store') }}" method="POST" class="p-6 text-gray-900">
+        <form action="{{ route('phq-questions.store') }}" method="POST" class="p-4 sm:p-6 text-gray-900">
             @csrf
             <h2 class="text-lg font-medium">Tambah Pertanyaan PHQ-9</h2>
             <p class="mt-1 text-sm text-gray-600 italic">Isi pertanyaan dan tentukan jawaban untuk skor 0-3.</p>

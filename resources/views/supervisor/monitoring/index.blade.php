@@ -1,16 +1,16 @@
 <x-app-layout>
-    <div class="py-8 bg-[#F8F9FA] min-h-screen">
+    <div class="py-6 sm:py-8 bg-[#F8F9FA] min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-            <div class="mb-6">
-                <h1 class="text-2xl font-bold text-gray-900">Monitoring Chat</h1>
+            <div class="mb-4 sm:mb-6">
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Monitoring Chat</h1>
                 <p class="text-gray-500 text-sm">Akses dan tinjau percakapan antara konselor dan pasien</p>
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
                 <form action="{{ route('supervisor.monitoring-chat') }}" method="GET">
                     <div class="grid grid-cols-12 gap-0">
-                        <div class="col-span-12 lg:col-span-4 p-5">
+                        <div class="col-span-12 lg:col-span-4 p-4 sm:p-5">
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider">Pilih Konselor</label>
                             <select name="counselor_id" onchange="this.form.submit()"
                                 class="w-full bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-pink-500 text-sm text-gray-600 py-2.5">
@@ -23,7 +23,7 @@
                             </select>
                         </div>
 
-                        <div class="col-span-12 lg:col-span-8 p-5">
+                        <div class="col-span-12 lg:col-span-8 p-4 sm:p-5 border-t lg:border-t-0 border-gray-50">
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider">Cari Pasien</label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 pl-3 flex items-center">
@@ -39,10 +39,10 @@
                 </form>
             </div>
 
-            <div class="grid grid-cols-12 gap-6">
+            <div class="grid grid-cols-12 gap-4 sm:gap-6">
                 <div class="col-span-12 lg:col-span-4">
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-[600px]">
-                        <div class="p-5 border-b border-gray-50 bg-white">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-[420px] sm:h-[600px]">
+                        <div class="p-4 sm:p-5 border-b border-gray-50 bg-white">
                             <h2 class="font-bold text-gray-800 tracking-tight">Sesi Chat</h2>
                         </div>
 
@@ -86,9 +86,9 @@
                 </div>
 
                 <div class="col-span-12 lg:col-span-8">
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-[600px] overflow-hidden">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-[500px] sm:h-[600px] overflow-hidden">
                         @if($selectedChat && $activePatient)
-                        <div class="p-5 border-b border-gray-50 flex items-center justify-between bg-white z-10">
+                        <div class="p-4 sm:p-5 border-b border-gray-50 flex items-center justify-between bg-white z-10">
                             <div>
                                 <h3 class="font-normal text-gray-900 text-lg">{{ ucfirst($activePatient->username) }}</h3>
                                 <p class="text-[13px] text-gray-400 font-normal">
@@ -97,12 +97,12 @@
                             </div>
                         </div>
 
-                        <div class="flex-1 p-8 overflow-y-auto space-y-6 bg-white">
+                        <div class="flex-1 p-4 sm:p-8 overflow-y-auto space-y-4 sm:space-y-6 bg-white">
                             @foreach($selectedChat as $chat)
                             @php $isCounselor = ($chat->sender->role_id == 2); @endphp
                             <div class="flex {{ $isCounselor ? 'justify-end' : 'justify-start' }}">
-                                <div class="max-w-[80%] lg:max-w-[70%]">
-                                    <div class="p-4 rounded-[20px] text-sm {{ $isCounselor 
+                                <div class="max-w-[85%] sm:max-w-[80%] lg:max-w-[70%]">
+                                    <div class="p-3 sm:p-4 rounded-[20px] text-sm {{ $isCounselor 
                                     ? 'bg-[#D94274] text-white rounded-br-none' 
                                     : 'bg-gray-100 text-gray-800 rounded-bl-none' }}">
                                         {{ $chat->message }}
